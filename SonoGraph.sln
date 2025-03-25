@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35913.81 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonoGraph", "SonoGraph\SonoGraph\SonoGraph.csproj", "{F3DA0BAA-66DC-45E1-9707-CF7CE984BB68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SonoGraph.Client", "SonoGraph\SonoGraph.Client\SonoGraph.Client.csproj", "{19011989-B9E4-44DC-80BA-5F82195B4F78}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F3DA0BAA-66DC-45E1-9707-CF7CE984BB68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3DA0BAA-66DC-45E1-9707-CF7CE984BB68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3DA0BAA-66DC-45E1-9707-CF7CE984BB68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3DA0BAA-66DC-45E1-9707-CF7CE984BB68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19011989-B9E4-44DC-80BA-5F82195B4F78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19011989-B9E4-44DC-80BA-5F82195B4F78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19011989-B9E4-44DC-80BA-5F82195B4F78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19011989-B9E4-44DC-80BA-5F82195B4F78}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A43365B8-AC19-4100-B394-C77D983D09AC}
+	EndGlobalSection
+EndGlobal
