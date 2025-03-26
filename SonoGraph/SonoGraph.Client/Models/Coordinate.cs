@@ -13,37 +13,19 @@
             X = x;
             Y = y;
         }
+    }
 
-        /// <summary>
-        /// Sets the coordinate to the given values
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        public void setCoodinate(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        /// <summary>
-        /// Sets the coordinate to the values of the given coordinate
-        /// </summary>
-        /// <param name="coordinate"></param>
-        public void setCoodinate(Coordinate coordinate)
-        {
-            X = coordinate.X;
-            Y = coordinate.Y;
-        }
-
+    public static class CoordinateUtils
+    {
         /// <summary>
         /// Returns the speed in pixels per second
         /// </summary>
-        /// <param name="lastCoordinate"></param>
+        /// <param name="previousCoordinate"></param>
         /// <param name="timeSpan"></param>
         /// <returns></returns>
-        public double getSpeed(Coordinate lastCoordinate, TimeSpan timeSpan)
+        public static double CalculateSpeed(Coordinate previousCoordinate, Coordinate currentCoordinate, TimeSpan timeSpan)
         {
-            return getDistance(lastCoordinate) / timeSpan.TotalMilliseconds * 1000;
+            return CalculateDistance(previousCoordinate, currentCoordinate) / timeSpan.TotalMilliseconds * 1000;
         }
 
         /// <summary>
@@ -51,11 +33,9 @@
         /// </summary>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        public double getDistance(Coordinate coordinate)
+        public static double CalculateDistance(Coordinate startCoordinate, Coordinate endCoordinate)
         {
-            return Math.Sqrt(Math.Pow(X - coordinate.X, 2) + Math.Pow(Y - coordinate.Y, 2));
+            return Math.Sqrt(Math.Pow(endCoordinate.X - startCoordinate.X, 2) + Math.Pow(endCoordinate.Y - startCoordinate.Y, 2));
         }
-
-
     }
 }

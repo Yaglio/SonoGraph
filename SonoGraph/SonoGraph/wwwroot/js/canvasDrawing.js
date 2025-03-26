@@ -15,18 +15,21 @@ window.initializeDrawing = (canvasId) => {
     }
 
     context.strokeStyle = 'black';
-    context.lineWidth = 2;
+    context.lineWidth = 4;
     context.lineCap = 'round';
+    context.lineJoin = 'round';
     console.log("Canvas initialized successfully.");
 };
 
-window.startDrawing = (x, y) => {
+window.startDrawing = (x, y, color) => {
     if (!context) {
         console.error("Drawing context is not initialized.");
         return;
     }
 
     console.log("JS start draw");
+
+    context.strokeStyle = color;
 
     context.beginPath();
     context.moveTo(x, y);

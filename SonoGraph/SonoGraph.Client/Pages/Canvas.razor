@@ -2,6 +2,7 @@
 @rendermode InteractiveWebAssembly
 
 @using SonoGraph.Client.Models
+@using System.Drawing
 
 @inject IJSRuntime JSRuntime
 
@@ -25,6 +26,8 @@
     private DateTime _lastDraw = DateTime.Now;
     private double _mouseSpeed = 0;
 
+    private Color strokeColor = Color.DeepSkyBlue;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -40,22 +43,26 @@
         if (_isCooldown) return;
 
         _isDrawing = true;
-        await JSRuntime.InvokeVoidAsync("startDrawing", e.OffsetX, e.OffsetY);
+        await JSRuntime.InvokeVoidAsync("startDrawing", e.OffsetX, e.OffsetY, ColorTranslator.ToHtml(strokeColor));
+        _lastDraw = DateTime.Now;
+        _lastMouse.X = e.OffsetX;
+        _lastMouse.Y = e.OffsetY;
     }
 
     private async Task OnMouseMove(MouseEventArgs e)
     {
         Console.WriteLine("Mouse Move");
 
-        _mouse.setCoodinate(e.OffsetX, e.OffsetY);
+        _mouse.X = e.OffsetX;
+        _mouse.Y = e.OffsetY;
 
         var _drawTime = DateTime.Now;
 
-        _mouseSpeed = _mouse.getSpeed(_lastMouse, _drawTime - _lastDraw);
+        _mouseSpeed = CoordinateUtils.CalculateSpeed(_lastMouse, _mouse, _drawTime - _lastDraw);
 
         _lastDraw = _drawTime;
 
-        _lastMouse.setCoodinate(_mouse);
+        _lastMouse = _mouse;
 
         if (!_isDrawing || _isCooldown) return;
 
@@ -64,7 +71,7 @@
 
     private async Task OnMouseUp(MouseEventArgs e)
     {
-        if (_isCooldown) return;
+        if (_isCooldown || !_isDrawing) return;
 
         Console.WriteLine("Mouse Up");
         _isDrawing = false;
