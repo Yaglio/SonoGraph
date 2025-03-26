@@ -1,0 +1,86 @@
+﻿@page "/canvas"
+@rendermode InteractiveWebAssembly
+
+@using SonoGraph.Client.Models
+
+@inject IJSRuntime JSRuntime
+
+<h3>Canvas</h3>
+
+<p>Mouse position x: @_mouse.X</p>
+<p>Mouse position y: @_mouse.Y</p>
+<p>Mouse speed: @_mouseSpeed</p>
+<p>Drawing active: @_isDrawing</p>
+<p>On cooldown: @_isCooldown</p>
+
+<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;"
+@onmousedown="OnMouseDown" @onmousemove="OnMouseMove" @onmouseup="OnMouseUp" @onmouseleave="OnMouseUp" />
+
+@code {
+
+    private bool _isDrawing = false;
+    private bool _isCooldown = false;
+    private Coordinate _mouse = new Coordinate();
+    private Coordinate _lastMouse = new Coordinate();
+    private DateTime _lastDraw = DateTime.Now;
+    private double _mouseSpeed = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initializeDrawing", "myCanvas");
+        }
+    }
+
+    private async Task OnMouseDown(MouseEventArgs e)
+    {
+        Console.WriteLine("Mouse Down");
+
+        if (_isCooldown) return;
+
+        _isDrawing = true;
+        await JSRuntime.InvokeVoidAsync("startDrawing", e.OffsetX, e.OffsetY);
+    }
+
+    private async Task OnMouseMove(MouseEventArgs e)
+    {
+        Console.WriteLine("Mouse Move");
+
+        _mouse.setCoodinate(e.OffsetX, e.OffsetY);
+
+        var _drawTime = DateTime.Now;
+
+        _mouseSpeed = _mouse.getSpeed(_lastMouse, _drawTime - _lastDraw);
+
+        _lastDraw = _drawTime;
+
+        _lastMouse.setCoodinate(_mouse);
+
+        if (!_isDrawing || _isCooldown) return;
+
+        await JSRuntime.InvokeVoidAsync("draw", e.OffsetX, e.OffsetY);
+    }
+
+    private async Task OnMouseUp(MouseEventArgs e)
+    {
+        if (_isCooldown) return;
+
+        Console.WriteLine("Mouse Up");
+        _isDrawing = false;
+        await JSRuntime.InvokeVoidAsync("stopDrawing");
+
+        _ = Cooldown();
+    }
+
+    private async Task Cooldown()
+    {
+        _isCooldown = true;
+
+        await Task.Delay(2000);
+
+        await JSRuntime.InvokeVoidAsync("clearCanvas");
+
+        _isCooldown = false;
+    }
+}
