@@ -10,7 +10,6 @@
 
 <p>Mouse position x: @_mouse.X</p>
 <p>Mouse position y: @_mouse.Y</p>
-<p>Mouse speed: @_mouseSpeed</p>
 <p>Drawing active: @_isDrawing</p>
 <p>On cooldown: @_isCooldown</p>
 
@@ -22,9 +21,6 @@
     private bool _isDrawing = false;
     private bool _isCooldown = false;
     private Coordinate _mouse = new Coordinate();
-    private Coordinate _lastMouse = new Coordinate();
-    private DateTime _lastDraw = DateTime.Now;
-    private double _mouseSpeed = 0;
 
     private Color strokeColor = Color.DeepSkyBlue;
 
@@ -38,51 +34,34 @@
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
-        Console.WriteLine("Mouse Down");
-
         if (_isCooldown) return;
 
-        _isDrawing = true;
         await JSRuntime.InvokeVoidAsync("startDrawing", e.OffsetX, e.OffsetY, ColorTranslator.ToHtml(strokeColor));
-        _lastDraw = DateTime.Now;
-        _lastMouse.X = e.OffsetX;
-        _lastMouse.Y = e.OffsetY;
+
+        _isDrawing = true;
     }
 
     private async Task OnMouseMove(MouseEventArgs e)
     {
-        Console.WriteLine("Mouse Move");
-
         _mouse.X = e.OffsetX;
         _mouse.Y = e.OffsetY;
+        DateTime dateTime = DateTime.Now;
 
-        var _drawTime = DateTime.Now;
-
-        _mouseSpeed = CoordinateUtils.CalculateSpeed(_lastMouse, _mouse, _drawTime - _lastDraw);
-
-        _lastDraw = _drawTime;
-
-        _lastMouse = _mouse;
-
-        if (!_isDrawing || _isCooldown) return;
+        if (!_isDrawing) return;
 
         await JSRuntime.InvokeVoidAsync("draw", e.OffsetX, e.OffsetY);
+
+        // await SendDrawData(_mouse, dateTime)
     }
 
     private async Task OnMouseUp(MouseEventArgs e)
     {
         if (_isCooldown || !_isDrawing) return;
 
-        Console.WriteLine("Mouse Up");
         _isDrawing = false;
-        await JSRuntime.InvokeVoidAsync("stopDrawing");
-
-        _ = Cooldown();
-    }
-
-    private async Task Cooldown()
-    {
         _isCooldown = true;
+
+        await JSRuntime.InvokeVoidAsync("stopDrawing");
 
         await Task.Delay(2000);
 
