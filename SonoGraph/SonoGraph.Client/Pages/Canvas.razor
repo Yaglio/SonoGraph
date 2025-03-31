@@ -14,7 +14,14 @@
 <p>On cooldown: @_isCooldown</p>
 
 <canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;"
-@onmousedown="OnMouseDown" @onmousemove="OnMouseMove" @onmouseup="OnMouseUp" @onmouseleave="OnMouseUp" />
+    @onmousedown="OnMouseDown"
+    @onmousemove="OnMouseMove" 
+    @onmouseup="OnMouseUp" 
+    @onmouseleave="OnMouseUp" 
+    @ontouchstart="OnTouchStart"
+    @ontouchmove="OnTouchMove"
+    @ontouchend="OnTouchEnd"
+    @ontouchleave="OnTouchEnd"/>
 
 @code {
 
@@ -24,37 +31,77 @@
 
     private Color strokeColor = Color.DeepSkyBlue;
 
+    private Coordinate _canvasOffset;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("initializeDrawing", "myCanvas");
+            _canvasOffset = await JSRuntime.InvokeAsync<Coordinate>("initializeDrawing", "myCanvas");
         }
     }
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
-        if (_isCooldown) return;
-
-        await JSRuntime.InvokeVoidAsync("startDrawing", e.OffsetX, e.OffsetY, ColorTranslator.ToHtml(strokeColor));
-
-        _isDrawing = true;
+        await StartDrawing(e.OffsetX, e.OffsetY);
     }
 
     private async Task OnMouseMove(MouseEventArgs e)
     {
         _mouse.X = e.OffsetX;
         _mouse.Y = e.OffsetY;
-        DateTime dateTime = DateTime.Now;
 
-        if (!_isDrawing) return;
-
-        await JSRuntime.InvokeVoidAsync("draw", e.OffsetX, e.OffsetY);
-
-        // await SendDrawData(_mouse, dateTime)
+        await Draw(e.OffsetX, e.OffsetY);
     }
 
     private async Task OnMouseUp(MouseEventArgs e)
+    {
+        await StopDrawing();
+    }
+
+    private async Task OnTouchStart(TouchEventArgs e)
+    {
+        var touchPoint = e.TargetTouches.FirstOrDefault();
+
+        if (touchPoint == null) return;
+
+        await StartDrawing(touchPoint.ClientX - _canvasOffset.X, touchPoint.ClientY - _canvasOffset.Y);
+    }
+
+    private async Task OnTouchMove(TouchEventArgs e)
+    {
+        var touchPoint = e.TargetTouches.FirstOrDefault();
+
+        if (touchPoint == null) return;
+
+        await Draw(touchPoint.ClientX - _canvasOffset.X, touchPoint.ClientY - _canvasOffset.Y);
+    }
+
+    private async Task OnTouchEnd(TouchEventArgs e)
+    {
+        await StopDrawing();
+    }
+
+    private async Task StartDrawing(double x, double y) {
+        if (_isCooldown) return;
+
+        await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
+
+        _isDrawing = true;
+    }
+
+    private async Task Draw(double x, double y)
+    {
+        if (!_isDrawing) return;
+
+        await JSRuntime.InvokeVoidAsync("draw", x, y);
+
+        // await SendDrawData(_mouse, dateTime)
+
+        await Task.Delay(1000);
+    }
+
+    private async Task StopDrawing()
     {
         if (_isCooldown || !_isDrawing) return;
 

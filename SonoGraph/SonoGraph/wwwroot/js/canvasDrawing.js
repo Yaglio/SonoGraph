@@ -19,6 +19,10 @@ window.initializeDrawing = (canvasId) => {
     context.lineCap = 'round';
     context.lineJoin = 'round';
     console.log("Canvas initialized successfully.");
+
+    var rect = canvas.getBoundingClientRect();
+
+    return { x: rect.left, y: rect.top };
 };
 
 window.startDrawing = (x, y, color) => {
