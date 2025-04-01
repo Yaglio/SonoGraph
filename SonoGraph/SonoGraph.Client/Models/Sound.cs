@@ -4,8 +4,5 @@
     {
         public double Frequency { get; set; }
         public double Amplitude { get; set; }
-        public string test2 { get; set; }
-
-        public double Test0 { get; set; }
     }
 }
