@@ -31,8 +31,6 @@ window.startDrawing = (x, y, color) => {
         return;
     }
 
-    console.log("JS start draw");
-
     context.strokeStyle = color;
 
     context.beginPath();
@@ -42,13 +40,11 @@ window.startDrawing = (x, y, color) => {
 window.draw = (x, y) => {
     if (!context) return;
 
-    console.log("JS draw at:", x, y);
     context.lineTo(x, y);
     context.stroke();
 };
 
 window.stopDrawing = () => {
-    console.log("JS stop draw");
     context.beginPath();
 };
 

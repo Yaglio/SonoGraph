@@ -20,6 +20,7 @@ else
 }
 
 
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();

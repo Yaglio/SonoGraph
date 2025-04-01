@@ -14,14 +14,14 @@
 <p>On cooldown: @_isCooldown</p>
 
 <canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;"
-    @onmousedown="OnMouseDown"
-    @onmousemove="OnMouseMove" 
-    @onmouseup="OnMouseUp" 
-    @onmouseleave="OnMouseUp" 
-    @ontouchstart="OnTouchStart"
-    @ontouchmove="OnTouchMove"
-    @ontouchend="OnTouchEnd"
-    @ontouchleave="OnTouchEnd"/>
+@onmousedown="OnMouseDown"
+@onmousemove="OnMouseMove" 
+@onmouseup="OnMouseUp" 
+@onmouseleave="OnMouseUp" 
+@ontouchstart="OnTouchStart"
+@ontouchmove="OnTouchMove"
+@ontouchend="OnTouchEnd"
+@ontouchleave="OnTouchEnd"/>
 
 @code {
 
@@ -40,6 +40,8 @@
             _canvasOffset = await JSRuntime.InvokeAsync<Coordinate>("initializeDrawing", "myCanvas");
         }
     }
+
+    #region InputEvents
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
@@ -82,6 +84,8 @@
         await StopDrawing();
     }
 
+    #endregion
+
     private async Task StartDrawing(double x, double y) {
         if (_isCooldown) return;
 
@@ -98,7 +102,7 @@
 
         // await SendDrawData(_mouse, dateTime)
 
-        await Task.Delay(1000);
+        // await SoundService.ProcessSound(PostionObjekt);
     }
 
     private async Task StopDrawing()
