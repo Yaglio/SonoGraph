@@ -1,0 +1,73 @@
+﻿@page "/audio"
+@using SonoGraph.Client.Models
+@using SonoGraph.Client.Services
+@rendermode InteractiveWebAssembly
+
+@inject IJSRuntime JSRuntime
+@inject AudioPlayerService AudioPlayerService
+
+<h3>AudioPlayer</h3>
+
+<button class="btn btn-primary" @onclick="PlayAudioSine">Play Sound (Sine)</button>
+
+<button class="btn btn-primary" @onclick="PlayAudioTriangle">Play Sound (Triangle)</button>
+
+<button class="btn btn-primary" @onclick="PlayAudioSawtooth">Play Sound (Sawtooth)</button>
+
+<button class="btn btn-primary" @onclick="PlayAudioSquare">Play Sound (Square)</button>
+
+<p>Frequency: @frequency</p>
+<input type="range" min="400" max="4000" step="1" @bind="@frequency" />
+
+
+<p>Volume: @volume (Achtung Laut!)</p>
+<input type="range" min="0" max="1" step="0.01" @bind="@volume" />
+
+<button class="btn btn-success" @onclick="PlayTestAudio">Play Test Audio</button>
+
+@code {
+
+    private double volume;
+    private double frequency;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AudioPlayerService.Initialize("audioPlayer");
+        }
+    }
+
+    private async Task PlayAudioTriangle()
+    {
+        await PlayAudio(WaveFormType.Triangle);
+    }
+
+    private async Task PlayAudioSine()
+    {
+        await PlayAudio(WaveFormType.Sine);
+    }
+
+    private async Task PlayAudioSawtooth()
+    {
+        await PlayAudio(WaveFormType.Sawtooth);
+    }
+
+    private async Task PlayAudioSquare()
+    {
+        await PlayAudio(WaveFormType.Square);
+    }
+
+    private async Task PlayTestAudio()
+    {
+        // Play a test sound
+        await AudioPlayerService.Play(AudioUtils.CreateTestAudio(), new CancellationToken());
+    }
+
+    private async Task PlayAudio(WaveFormType waveForm)
+    {
+        // Play a single sound
+        await AudioPlayerService.Play(new Sound(frequency, volume * 0.1), 2000, waveForm);
+    }
+
+}
