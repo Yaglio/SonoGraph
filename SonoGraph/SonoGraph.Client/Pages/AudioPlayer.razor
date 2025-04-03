@@ -67,7 +67,7 @@
     private async Task PlayAudio(WaveFormType waveForm)
     {
         // Play a single sound
-        await AudioPlayerService.Play(new Sound(frequency, volume * 0.1), 2000, waveForm);
+        await AudioPlayerService.Play(new Sound(frequency, volume * 0.1), 2000, waveForm, new CancellationToken());
     }
 
 }

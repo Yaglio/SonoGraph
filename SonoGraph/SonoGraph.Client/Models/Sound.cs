@@ -1,6 +1,9 @@
 ﻿namespace SonoGraph.Client.Models
 {
-    public class Sound
+    /// <summary>
+    /// Represents a sound with a frequency and amplitude.
+    /// </summary>
+    public struct Sound
     {
         public double Frequency { get; set; }
         public double Amplitude { get; set; }
