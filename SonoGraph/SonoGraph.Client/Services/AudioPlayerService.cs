@@ -18,7 +18,8 @@ namespace SonoGraph.Client.Services
         }
 
         /// <summary>
-        /// Plays a stream of sounds with the specified wave form.
+        /// Plays a stream of sounds with the specified wave form. 
+        /// Use an <see cref="AsyncSoundStream"/> to dynamically add sounds.
         /// </summary>
         /// <param name="sounds"></param>
         /// <param name="waveForm"></param>
