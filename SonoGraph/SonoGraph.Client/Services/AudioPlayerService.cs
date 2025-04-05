@@ -12,6 +12,11 @@ namespace SonoGraph.Client.Services
             jSRuntime = JSRuntime;
         }
 
+        /// <summary>
+        /// Initializes the audio player with the js audio context.
+        /// </summary>
+        /// <param name="audioId"></param>
+        /// <returns></returns>
         public async Task Initialize(string audioId)
         {
             await jSRuntime.InvokeVoidAsync("initializeAudioPlayer");
@@ -51,15 +56,14 @@ namespace SonoGraph.Client.Services
         /// Plays a sound with the specified frequency, amplitude, and wave form for a duration in ms.
         /// </summary>
         /// <param name="sound"></param>
-        /// <param name="duration"></param>
         /// <param name="waveForm"></param>
         /// <returns></returns>
-        public async Task Play(Sound sound, int duration, WaveFormType waveForm, CancellationToken cancellationToken)
+        public async Task Play(Sound sound, WaveFormType waveForm, CancellationToken cancellationToken)
         {
             async IAsyncEnumerable<Sound> StreamSound()
             {
                 yield return sound;
-                await Task.Delay(duration, cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(sound.Duration), cancellationToken);
             }
 
 
@@ -74,14 +78,12 @@ namespace SonoGraph.Client.Services
         /// <returns></returns>
         public async Task Play(Audio audio, CancellationToken cancellationToken)
         {
-            var duration = TimeSpan.FromSeconds(1 / audio.SamplingRate);
-
             async IAsyncEnumerable<Sound> StreamSound()
             {
                 foreach (var sound in audio.Sounds)
                 {
                     yield return sound;
-                    await Task.Delay(duration, cancellationToken);
+                    await Task.Delay(TimeSpan.FromMilliseconds(sound.Duration), cancellationToken);
                 }
 
             }

@@ -8,10 +8,16 @@
         public double Frequency { get; set; }
         public double Amplitude { get; set; }
 
-        public Sound(double frequency, double amplitude)
+        /// <summary>
+        /// The duration of the sound in milliseconds.
+        /// </summary>
+        public double Duration { get; set; }
+
+        public Sound(double frequency, double amplitude, double duration)
         {
             Frequency = frequency;
             Amplitude = amplitude;
+            Duration = duration;
         }
     }
 }

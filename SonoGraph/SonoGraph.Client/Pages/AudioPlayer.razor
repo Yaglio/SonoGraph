@@ -16,8 +16,10 @@
 
 <button class="btn btn-primary" @onclick="PlayAudioSquare">Play Sound (Square)</button>
 
+<button class="btn btn-primary" @onclick="PlayAudioAccord">Play Accord</button>
+
 <p>Frequency: @frequency</p>
-<input type="range" min="400" max="4000" step="1" @bind="@frequency" />
+<input type="range" min="200" max="4000" step="1" @bind="@frequency" />
 
 
 <p>Volume: @volume (Achtung Laut!)</p>
@@ -67,7 +69,20 @@
     private async Task PlayAudio(WaveFormType waveForm)
     {
         // Play a single sound
-        await AudioPlayerService.Play(new Sound(frequency, volume * 0.1), 2000, waveForm, new CancellationToken());
+        await AudioPlayerService.Play(new Sound(frequency, volume * 0.1, 2000), waveForm, new CancellationToken());
     }
+    private async Task PlayAudioAccord(MouseEventArgs args)
+    {
+        var taskC = AudioPlayerService.Play(new Sound(264, volume * 0.1,200), WaveFormType.Sine, new CancellationToken());
 
+        var taskE = Task.Delay(1000).ContinueWith(_ =>
+            AudioPlayerService.Play(new Sound(330, volume * 0.1, 2000), WaveFormType.Sine, new CancellationToken())
+        ).Unwrap();
+
+        var taskG = Task.Delay(2000).ContinueWith(_ =>
+            AudioPlayerService.Play(new Sound(396, volume * 0.1,2000), WaveFormType.Sine, new CancellationToken())
+        ).Unwrap();
+
+        await Task.WhenAll(taskC, taskE, taskG);
+    }
 }
