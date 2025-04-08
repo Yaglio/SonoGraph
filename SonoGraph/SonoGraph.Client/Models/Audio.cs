@@ -2,7 +2,7 @@
 {
     public class Audio
     {
-        public double SamplingRate { get; set; }
+        public TimeSpan Duration { get; set; }
         public WaveForm WaveForm { get; set; }
         public List<Sound> Sounds { get; set; }
     }
