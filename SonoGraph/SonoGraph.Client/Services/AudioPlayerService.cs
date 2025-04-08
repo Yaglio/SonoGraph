@@ -17,7 +17,7 @@ namespace SonoGraph.Client.Services
         /// </summary>
         /// <param name="audioId"></param>
         /// <returns></returns>
-        public async Task Initialize(string audioId)
+        public async Task Initialize()
         {
             await jSRuntime.InvokeVoidAsync("initializeAudioPlayer");
         }
