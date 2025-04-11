@@ -1,8 +1,43 @@
 ﻿@page "/editor"
 @rendermode InteractiveWebAssembly
 
-<!--html code @TODO-->
+@using SonoGraph.Client.Models
+
+<h3>Audio Editor</h3>
+
+<div class="slidecontainer">
+    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+</div>
 
 @code {
+    double currentLeft = 0;
 
+    // Methode zur Initialisierung der Audio-Instanz
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Audio audio = CreateTestAudio2();
+    }
+
+    // Methode zur Berechnung der Breite basierend auf der Dauer
+    private double CalculateWidth(double duration)
+    {
+        // Hier nehmen wir an, dass 1px pro Millisekunde Dauer verwendet wird
+        return duration * 1; // 1 ist der Skalierungsfaktor
+    }
+
+    public static Audio CreateTestAudio2()
+    {
+        double baseFrequency = 440; // A4 note
+        double modulationDepth = 100; // Wie stark die Frequenz verschoben wird
+        double modulationSpeed = 0.1; // Steuerung der Oszillationsgeschwindigkeit
+
+        return new Audio(WaveFormType.Sine, Enumerable
+                .Range(0, 5)
+                .Select(i => new Sound(
+                    baseFrequency + modulationDepth * Math.Sin(i * modulationSpeed),
+                    0.05,
+                    baseFrequency - i * 50))  // Beispiel für eine Frequenz, die modifiziert wird
+                .ToList());
+    }
 }

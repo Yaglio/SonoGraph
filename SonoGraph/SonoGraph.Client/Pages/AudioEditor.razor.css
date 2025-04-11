@@ -1,0 +1,14 @@
+﻿body {
+    /* Du kannst hier body-spezifische Styles setzen, wenn gewünscht */
+}
+
+/* Container für den Slider */
+.slidecontainer {
+    width: 100%; /* Breite des Containers */
+}
+
+.slider {
+    width: 100%;
+    background-color: #d3d3d3;
+}
+
