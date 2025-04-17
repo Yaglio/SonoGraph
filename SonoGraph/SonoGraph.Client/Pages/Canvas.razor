@@ -7,10 +7,10 @@
 @inject VolumeService VolumeService
 
 <!--test header to show global volume. Header is removeable-->
-<header class="pageHeader">
+<header class="gHeader">
     <h3 class="pageTitle">Canvas</h3>
-    <p>Aktuelle Lautstärke: @VolumeService.MasterVolume%</p>
-    <input type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+    <span class="gVolDisplay"> Global volume: @VolumeService.MasterVolume%</span>
+    <input class="globalVol" type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
 </header>
 
 <p>Mouse position x: @_mouse.X</p>

@@ -1,48 +1,50 @@
 ﻿body {
-    /* Du kannst hier body-spezifische Styles setzen, wenn gewünscht */
 }
 
-/* Container für den Slider */
-.pageHeader {
+/* Global header */
+.gHeader {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    background-color: #f4f4f4;
-    border-bottom: 1px solid #ccc;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #8adcd9;
+    border-bottom: 1px solid #000;
 }
 
 .pageTitle {
-    margin: 0;
     font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.globalVolContainer {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 1;
+    margin: auto 0;
+    text-shadow: 1px 1px 1px grey;
 }
 
 .gVolDisplay {
-    margin: 0;
-    font-weight: bold;
     white-space: nowrap;
+    margin: auto 20px auto auto;
 }
 
 .globalVol {
     width: 150px;
 }
 
-
+/* Specific elements */
 .editorcontainer {
-    height: 500px;
-    width: 500px;
-    background-color: blue;
+    display: flex;
 }
 
-.column {
-    float: left;
-    width: 33.33%;
+.contentcontainer {
+    width: 80%;
+    height: 1000px;
+    background-color: lightgreen;
+}
+
+.toolcontainer {
+    width: 20%;
+    height: 1000px;
+    background-color: lightcoral;
+}
+
+.soundBar {
+    height: 20px;
+    background-color: steelblue;
+    margin: 5px;
 }

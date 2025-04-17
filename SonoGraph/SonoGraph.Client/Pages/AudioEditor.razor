@@ -6,61 +6,43 @@
 @using SonoGraph.Client.Models
 
 <!--test header to show global volume. Header is removeable-->
-<header class="pageHeader">
-    <h3 class="pageTitle">Canvas</h3>
-    <p>Aktuelle Lautstärke: @VolumeService.MasterVolume%</p>
-    <input type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+<header class="gHeader">
+	<h3 class="pageTitle">Audio Editor</h3>
+	<span class="gVolDisplay"> Global volume: @VolumeService.MasterVolume%</span>
+	<input class="globalVol" type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
 </header>
 
 <div class="editorcontainer">
-    <!-- Dein Editor-Inhalt hier -->
-</div>
-
-<div class="row">
-    <div class="column">
-        <h2>Column</h2>
-        <p>Lorem ipsum dolor sit amet...</p>
-    </div>
-
-    <div class="column">
-        <h2>Column</h2>
-        <p>Lorem ipsum dolor sit amet...</p>
-    </div>
-
-    <div class="column">
-        <h2>Column</h2>
-        <p>Lorem ipsum dolor sit amet...</p>
-    </div>
+	<div class="contentcontainer">
+		<h3>Content</h3>
+		<div class="sound-list">
+			@{
+				double currentLeft = 0;
+			}
+			@foreach (var Sound in Sounds)
+			{
+				<div class="soundBar" style="width:@(Sound.Duration)px; margin-left:@(currentLeft)px"></div>
+				currentLeft += Sound.Duration;
+			}
+		</div>
+	</div>
+	<div class="toolcontainer">
+		<h3>Tools</h3>
+	</div>
 </div>
 
 @code {
-    double currentLeft = 0;
+	List<Sound> Sounds = new();
 
-    // Methode zur Initialisierung der Audio-Instanz
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        Audio audio = CreateTestAudio2();
-    }
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		int[] Durations = { 20, 50, 10, 5, 100, 150, 110, 135 };
+		foreach (int Duration in Durations)
+		{
+			Sounds.Add(new Sound(50.0, 50.0, Duration));
+		}
+		Audio audio = new Audio(WaveFormType.Sine, Sounds);
 
-    // Methode zur Berechnung der Breite basierend auf der Dauer
-    private double CalculateWidth(double duration)
-    {
-        return duration * 1; // Skalierungsfaktor
-    }
-
-    public static Audio CreateTestAudio2()
-    {
-        double baseFrequency = 440; // A4 note
-        double modulationDepth = 100;
-        double modulationSpeed = 0.1;
-
-        return new Audio(WaveFormType.Sine, Enumerable
-                .Range(0, 5)
-                .Select(i => new Sound(
-                    baseFrequency + modulationDepth * Math.Sin(i * modulationSpeed),
-                    0.05,
-                    baseFrequency - i * 50)) // Beispiel Frequenzmodulation
-                .ToList());
-    }
+	}
 }
