@@ -10,6 +10,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<AudioPlayerService>();
 
+builder.Services.AddScoped<VolumeService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

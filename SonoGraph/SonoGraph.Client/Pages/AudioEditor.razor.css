@@ -3,12 +3,46 @@
 }
 
 /* Container für den Slider */
-.slidecontainer {
-    width: 100%; /* Breite des Containers */
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ccc;
 }
 
-.slider {
-    width: 100%;
-    background-color: #d3d3d3;
+.pageTitle {
+    margin: 0;
+    font-size: 1.5rem;
+    flex-shrink: 0;
 }
 
+.globalVolContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 1;
+}
+
+.gVolDisplay {
+    margin: 0;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.globalVol {
+    width: 150px;
+}
+
+
+.editorcontainer {
+    height: 500px;
+    width: 500px;
+    background-color: blue;
+}
+
+.column {
+    float: left;
+    width: 33.33%;
+}

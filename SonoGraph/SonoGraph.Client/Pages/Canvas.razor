@@ -4,8 +4,14 @@
 @using System.Drawing
 
 @inject IJSRuntime JSRuntime
+@inject VolumeService VolumeService
 
-<h3>Canvas</h3>
+<!--test header to show global volume. Header is removeable-->
+<header class="pageHeader">
+    <h3 class="pageTitle">Canvas</h3>
+    <p>Aktuelle Lautstärke: @VolumeService.MasterVolume%</p>
+    <input type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+</header>
 
 <p>Mouse position x: @_mouse.X</p>
 <p>Mouse position y: @_mouse.Y</p>

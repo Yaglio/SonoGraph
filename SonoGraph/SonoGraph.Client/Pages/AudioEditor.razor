@@ -1,18 +1,39 @@
 ﻿@page "/editor"
 @rendermode InteractiveWebAssembly
 
+@inject VolumeService VolumeService
+
 @using SonoGraph.Client.Models
 
-<h3>Audio Editor</h3>
+<!--test header to show global volume. Header is removeable-->
+<header class="pageHeader">
+    <h3 class="pageTitle">Canvas</h3>
+    <p>Aktuelle Lautstärke: @VolumeService.MasterVolume%</p>
+    <input type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+</header>
 
-<div class="slidecontainer">
-    <input type="range" min="1" max="100" class="slider" id="myRange" @bind="@master" @bind:event="oninput">
+<div class="editorcontainer">
+    <!-- Dein Editor-Inhalt hier -->
 </div>
 
-<p>Master value: @master%</p>
+<div class="row">
+    <div class="column">
+        <h2>Column</h2>
+        <p>Lorem ipsum dolor sit amet...</p>
+    </div>
+
+    <div class="column">
+        <h2>Column</h2>
+        <p>Lorem ipsum dolor sit amet...</p>
+    </div>
+
+    <div class="column">
+        <h2>Column</h2>
+        <p>Lorem ipsum dolor sit amet...</p>
+    </div>
+</div>
 
 @code {
-    private double master = 50;
     double currentLeft = 0;
 
     // Methode zur Initialisierung der Audio-Instanz
@@ -25,22 +46,21 @@
     // Methode zur Berechnung der Breite basierend auf der Dauer
     private double CalculateWidth(double duration)
     {
-        // Hier nehmen wir an, dass 1px pro Millisekunde Dauer verwendet wird
-        return duration * 1; // 1 ist der Skalierungsfaktor
+        return duration * 1; // Skalierungsfaktor
     }
 
     public static Audio CreateTestAudio2()
     {
         double baseFrequency = 440; // A4 note
-        double modulationDepth = 100; // Wie stark die Frequenz verschoben wird
-        double modulationSpeed = 0.1; // Steuerung der Oszillationsgeschwindigkeit
+        double modulationDepth = 100;
+        double modulationSpeed = 0.1;
 
         return new Audio(WaveFormType.Sine, Enumerable
                 .Range(0, 5)
                 .Select(i => new Sound(
                     baseFrequency + modulationDepth * Math.Sin(i * modulationSpeed),
                     0.05,
-                    baseFrequency - i * 50))  // Beispiel für eine Frequenz, die modifiziert wird
+                    baseFrequency - i * 50)) // Beispiel Frequenzmodulation
                 .ToList());
     }
 }
