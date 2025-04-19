@@ -4,13 +4,13 @@
 @using System.Drawing
 
 @inject IJSRuntime JSRuntime
-@inject AudioPlayerService AudioPlayerService
+@inject AudioPlayerService audioPlayerService
 
 <!--test header to show global volume. Header is removeable-->
 <header class="gHeader">
     <h3 class="pageTitle">Canvas</h3>
-    <span class="gVolDisplay"> Global volume: @AudioPlayerService.MasterVolume%</span>
-    <input class="globalVol" type="range" min="0" max="100" @bind="@AudioPlayerService.MasterVolume" @bind:event="oninput" />
+    <span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
+    <input class="globalVol" type="range" min="0" max="100" @bind="@audioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
 <p>Mouse position x: @_mouse.X</p>
@@ -18,7 +18,7 @@
 <p>Drawing active: @_isDrawing</p>
 <p>On cooldown: @_isCooldown</p>
 
-<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;"
+<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000; background-image: url(/Images/paper.png);"
 @onmousedown="OnMouseDown"
 @onmousemove="OnMouseMove" 
 @onmouseup="OnMouseUp" 

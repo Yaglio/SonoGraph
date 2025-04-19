@@ -14,35 +14,106 @@
 
 <div class="editorcontainer">
 	<div class="contentcontainer">
-		<h3>Content</h3>
-		<div class="sound-list">
-			@{
-				double currentLeft = 0;
-			}
-			@foreach (var Sound in Sounds)
-			{
-				<button type="button" class="soundBar" style="width:@(Sound.Duration)px; margin-left:@(currentLeft)px"></button>
-				currentLeft += Sound.Duration;
-			}
-		</div>
+		<h3>Audio tracks</h3>
+		@foreach (var Audio in Audios)
+		{
+			<button type="button"
+			class="bar"
+			style="width: @(getWidth(Audio))px;"
+			@onfocus="@(() => SelectBar(Audio))"
+			@onblur="@(() => ClearSelection())">
+			</button>
+		}
+
 	</div>
 	<div class="toolcontainer">
 		<h3>Tools</h3>
+		<div class="toolCat">
+			Audio modification
+			<button class="tool" @onclick="DeleteSelected">Delete Selected</button>
+			<button class="tool" @onclick="addAudio">Add test audio</button>
+			<button class="tool" @onclick="merge">Merge tracks</button>
+		</div>
+		<div class="toolCat">
+			Playback control
+			<button class="tool">Play</button>
+			<button class="tool">Stop</button>
+		</div>
 	</div>
 </div>
 
 @code {
-	List<Sound> Sounds = new();
+	List<Audio> Audios = new();
+
+	protected int getWidth(Audio audio)
+	{
+		int width = 0;
+		foreach (var Sound in audio.Sounds) {
+			width += (int) Sound.Duration;
+		}
+		return width;
+	}
 
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		int[] Durations = { 20, 50, 10, 5, 100, 150, 110, 135 };
+	}
+
+	protected void addAudio()
+	{
+		int[] Durations = { 20, 50, 10, 5000, 100, 150, 110, 135 };
+		List<Sound> Sounds = new List<Sound>();
 		foreach (int Duration in Durations)
 		{
 			Sounds.Add(new Sound(50.0, 50.0, Duration));
 		}
 		Audio audio = new Audio(WaveFormType.Sine, Sounds);
+		Audios.Add(audio);
+	}
 
+	Audio? selected = null;
+	bool isDeleting = false;
+
+	void SelectBar(Audio audio)
+	{
+		selected = audio;
+	}
+
+	async void ClearSelection()
+	{
+		await Task.Delay(200);
+		if (!isDeleting)
+		{
+			selected = null;
+		}
+	}
+
+	void DeleteSelected()
+	{
+		isDeleting = true;
+
+		if (selected != null)
+		{
+			Audios.Remove(selected);
+			selected = null;
+		}
+
+		isDeleting = false;
+	}
+
+	Audio? toMerge = null;
+
+	void merge()
+	{
+		if (toMerge != null)
+		{
+			DeleteSelected();
+			Audios.Remove(toMerge);
+			toMerge = null;
+		} else
+		if (selected != null)
+		{
+			toMerge = selected;
+		}
 	}
 }

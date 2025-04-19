@@ -4,10 +4,11 @@
 /* Global header */
 .gHeader {
     display: flex;
+    height: 10%;
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
-    background-color: #8adcd9;
+    background-color: lightgray;
     border-bottom: 1px solid #000;
 }
 
@@ -29,27 +30,57 @@
 /* Specific elements */
 .editorcontainer {
     display: flex;
+    width: 1700px;
+    height: 88%;
 }
 
 .contentcontainer {
-    width: 80%;
-    height: 1000px;
-    background-color: lightgreen;
+    height: 100%;
+    width: 85%;
+    background-color: darkgrey;
+    overflow: auto;
+    padding: 10px;
+    border-bottom: 2px solid;
+    border-top: 2px solid;
 }
+
+.bar {
+    display: block;
+    height: 100px;
+    background-color: lightgrey;
+    margin: 10px;
+}
+
+    .bar:focus {
+        background-color: white;
+        transition-duration: 100ms;
+    }
 
 .toolcontainer {
-    width: 20%;
-    height: 1000px;
-    background-color: lightcoral;
+    width: 15%;
+    background-color: lightseagreen;
+    padding: 10px;
+    border: 2px solid;
 }
 
-.soundBar {
+.toolCat {
+    border: 2px dashed black;
+    margin-top: 10px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.tool {
     display: block;
-    height: 20px;
-    background-color: steelblue;
-    cursor: pointer;
+    border: 5px groove;
+    margin: 10px;
+    width: 205px;
 }
 
-.soundBar:focus {
-    background-color: aqua;
+.tool:hover {
+    background-color: lightgrey;
 }
+
+    .tool:active {
+        background-color: grey;
+    }
