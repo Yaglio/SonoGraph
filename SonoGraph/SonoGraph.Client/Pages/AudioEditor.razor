@@ -1,15 +1,15 @@
 ﻿@page "/editor"
 @rendermode InteractiveWebAssembly
 
-@inject VolumeService VolumeService
+@inject AudioPlayerService audioPlayerService
 
 @using SonoGraph.Client.Models
 
 <!--test header to show global volume. Header is removeable-->
 <header class="gHeader">
 	<h3 class="pageTitle">Audio Editor</h3>
-	<span class="gVolDisplay"> Global volume: @VolumeService.MasterVolume%</span>
-	<input class="globalVol" type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+	<span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
+	<input class="globalVol" type="range" min="0" max="100" @bind="@audioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
 <div class="editorcontainer">
@@ -21,7 +21,7 @@
 			}
 			@foreach (var Sound in Sounds)
 			{
-				<div class="soundBar" style="width:@(Sound.Duration)px; margin-left:@(currentLeft)px"></div>
+				<button type="button" class="soundBar" style="width:@(Sound.Duration)px; margin-left:@(currentLeft)px"></button>
 				currentLeft += Sound.Duration;
 			}
 		</div>

@@ -4,13 +4,13 @@
 @using System.Drawing
 
 @inject IJSRuntime JSRuntime
-@inject VolumeService VolumeService
+@inject AudioPlayerService AudioPlayerService
 
 <!--test header to show global volume. Header is removeable-->
 <header class="gHeader">
     <h3 class="pageTitle">Canvas</h3>
-    <span class="gVolDisplay"> Global volume: @VolumeService.MasterVolume%</span>
-    <input class="globalVol" type="range" min="0" max="100" @bind="@VolumeService.MasterVolume" @bind:event="oninput" />
+    <span class="gVolDisplay"> Global volume: @AudioPlayerService.MasterVolume%</span>
+    <input class="globalVol" type="range" min="0" max="100" @bind="@AudioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
 <p>Mouse position x: @_mouse.X</p>

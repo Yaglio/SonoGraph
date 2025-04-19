@@ -6,6 +6,7 @@ namespace SonoGraph.Client.Services
     public class AudioPlayerService
     {
         private readonly IJSRuntime jSRuntime;
+        public double MasterVolume { get; set; } = 50;
 
         public AudioPlayerService(IJSRuntime JSRuntime)
         {
@@ -39,7 +40,7 @@ namespace SonoGraph.Client.Services
                 await foreach (var sound in sounds.WithCancellation(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await jSRuntime.InvokeVoidAsync("playAudio", id, sound.Frequency, sound.Amplitude);
+                    await jSRuntime.InvokeVoidAsync("playAudio", id, sound.Frequency, sound.Amplitude * MasterVolume / 100);
                 }
             }
             catch (OperationCanceledException)

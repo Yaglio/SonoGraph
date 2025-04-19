@@ -44,7 +44,12 @@
 }
 
 .soundBar {
+    display: block;
     height: 20px;
     background-color: steelblue;
-    margin: 5px;
+    cursor: pointer;
+}
+
+.soundBar:focus {
+    background-color: aqua;
 }

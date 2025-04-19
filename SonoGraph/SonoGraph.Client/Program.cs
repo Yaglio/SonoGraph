@@ -5,6 +5,4 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddSingleton<AudioPlayerService>();
 
-builder.Services.AddSingleton<VolumeService>();
-
 await builder.Build().RunAsync();
