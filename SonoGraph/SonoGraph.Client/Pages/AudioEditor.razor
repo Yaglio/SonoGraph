@@ -87,7 +87,7 @@
         "#A1E1A1", // Soft Emerald Green
         "#F1C676", // Soft Golden Yellow
         "#B58BCA"  // Light Dark Purple
-		};
+	};
 
 	protected string getHash()
 	{
@@ -166,14 +166,43 @@
 		}
 	}
 
+	private Dictionary<Audio, CancellationTokenSource> playbackTokens = new();
+
 	private async Task play()
 	{
+		await stop();
 		await audioPlayerService.Initialize();
-		await audioPlayerService.Play(selected.First(), new CancellationToken());
+
+		foreach (var audio in selected)
+		{
+			var cts = new CancellationTokenSource();
+			playbackTokens[audio] = cts;
+
+			_ = PlayAudioAsync(audio, cts.Token);
+		}
+	}
+
+	private async Task PlayAudioAsync(Audio audio, CancellationToken token)
+	{
+		try
+		{
+			await audioPlayerService.Play(audio, token);
+		}
+		catch (OperationCanceledException)
+		{
+			Console.WriteLine($"Playback of {audio.GetHashCode()} cancelled.");
+		}
 	}
 
 	private async Task stop()
 	{
-		await audioPlayerService.StopAudio();
+		foreach (var kv in playbackTokens)
+		{
+			kv.Value.Cancel();
+		}
+
+		await Task.Delay(100);
+
+		playbackTokens.Clear();
 	}
 }

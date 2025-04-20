@@ -92,11 +92,5 @@ namespace SonoGraph.Client.Services
 
             await Play(StreamSound(), audio.WaveForm, cancellationToken);
         }
-        public async Task StopAudio()
-        {
-            // Stop the audio via JS interop
-            await jSRuntime.InvokeVoidAsync("stopAllAudio");
-            currentId = null;
-        }
     }
 }

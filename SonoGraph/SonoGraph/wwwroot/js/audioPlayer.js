@@ -3,16 +3,15 @@ var oscillators = new Map();
 var oscillatorIdCounter = 0;
 
 window.initializeAudioPlayer = () => {
-
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
     if (!audioContext) {
-        console.error("AudioContext element not found:", audioId);
+        console.error("AudioContext not available.");
         return;
     }
 
-    console.log("AudioContext initialized successfully.");
-}
+    console.log("AudioContext initialized.");
+};
 
 window.startAudio = (waveForm) => {
     if (!audioContext) {
@@ -21,88 +20,85 @@ window.startAudio = (waveForm) => {
     }
 
     const oscillator = new Oszillator(waveForm, audioContext);
-    oscillator.start();
-
     oscillatorIdCounter++;
-
-    oscillators.set(oscillatorIdCounter, oscillator)
+    oscillators.set(oscillatorIdCounter, oscillator);
 
     return oscillatorIdCounter;
-}
+};
 
 window.playAudio = (id, frequency, amplitude) => {
-    if (!oscillators.has(id)) {
+    const osc = oscillators.get(id);
+    if (!osc) {
         console.error("Invalid oscillator id:", id);
         return;
     }
 
-   
-    oscillators.get(id).play(frequency, amplitude);
-}
+    osc.play(frequency, amplitude);
+};
 
 window.stopAudio = (id) => {
-    if (!oscillators.has(id)) {
+    const osc = oscillators.get(id);
+    if (!osc) {
         console.error("Invalid oscillator id:", id);
         return;
     }
 
-    oscillators.get(id).stop();
-
+    osc.stopAll();
     oscillators.delete(id);
-}
+};
 
 window.stopAllAudio = () => {
-    for (const [id, oscillator] of oscillators.entries()) {
-        oscillator.stop();
+    for (const [id, osc] of oscillators) {
+        osc.stopAll();
     }
     oscillators.clear();
     console.log("All audio stopped.");
-}
+};
 
+
+// Oszillator ist jetzt ein polyphoner Voice-Manager
 class Oszillator {
     constructor(waveForm, audioContext) {
         this.audioContext = audioContext;
         this.waveForm = waveForm;
-        this.oscillator = null;
-        this.gainNode = null;
+        this.voices = new Set(); // alle aktiven Mini-Oszillatoren
     }
-
-    start() {
-        if (!this.audioContext) {
-            console.error("AudioPlayer not initialized");
-            return;
-        }
-  
-        this.oscillator = this.audioContext.createOscillator();
-        this.gainNode = this.audioContext.createGain();
-        this.oscillator.type = this.waveForm;
-
-        this.oscillator.connect(this.gainNode);
-        this.gainNode.connect(this.audioContext.destination);
-
-        this.oscillator.start();
-    }
-
 
     play(frequency, amplitude) {
-        if (!this.audioContext || !this.oscillator || !this.gainNode) {
-            console.error("Oszillator not initialized");
-            return;
-        }
-        this.oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime); // value in hertz (Hz)
-        this.gainNode.gain.setValueAtTime(amplitude, this.audioContext.currentTime); // amplitude (volume)
+        const now = this.audioContext.currentTime;
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+
+        osc.type = this.waveForm;
+        osc.frequency.setValueAtTime(frequency, now);
+
+        gain.gain.setValueAtTime(0, now); // Start bei 0
+        gain.gain.linearRampToValueAtTime(amplitude, now + 0.05); // sanft rein in 10ms
+
+        const duration = 0.2;
+        gain.gain.setValueAtTime(amplitude, now + duration - 0.05); // kurz vor Ende
+        gain.gain.linearRampToValueAtTime(0, now + duration); // weich ausblenden
+
+        osc.connect(gain).connect(this.audioContext.destination);
+        osc.start(now);
+        osc.stop(now + duration);
+
+        osc.onended = () => {
+            osc.disconnect();
+            gain.disconnect();
+            this.voices.delete(osc);
+        };
+
+        this.voices.add(osc);
     }
 
-    stop() {
-        if (!this.audioContext || !this.oscillator || !this.gainNode) {
-            console.error("Oszillator not initialized");
-            return;
+    stopAll() {
+        for (const osc of this.voices) {
+            try {
+                osc.stop();
+                osc.disconnect();
+            } catch { }
         }
-        this.oscillator.stop();
-        this.oscillator.disconnect();
-        this.gainNode.disconnect();
-        this.oscillator = null;
-        this.gainNode = null;
+        this.voices.clear();
     }
 }
-
