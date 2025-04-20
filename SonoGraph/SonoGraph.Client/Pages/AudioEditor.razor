@@ -6,7 +6,14 @@
 
 @using SonoGraph.Client.Models
 
-<!--test header to show global volume. Header is removable-->
+<!--AudioEditor UI. Has functions to display and delete many audios at once and to control the playback of audios.
+Merge and other tools require external methods (Anna), input comes from external source via addAudio(Audio).
+For removing an audio use removeAudio(Audio).
+
+Author: DaveH
+-->
+
+<!--global header-->
 <header class="gHeader">
 	<h3 class="pageTitle">Audio Editor</h3>
 	<span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
@@ -20,7 +27,6 @@
 			@foreach (var Audio in Audios)
 			{
 				<div class="audioItem">
-					<!-- Index of the Audio bar -->
 					<span class="audioIndex">@(Audios.IndexOf(Audio) + 1)</span>
 
 					<button type="button"
@@ -34,7 +40,7 @@
 				</div>
 			}
 
-			<!-- Scale at the bottom of the content container -->
+			<!-- Scale -->
 			<div class="scale" style="width:@(getMaxWidth())px;">
 				@{
 					double max = getMaxWidth();
@@ -46,7 +52,6 @@
 							@if (i % 100 == 0)
 							{
 								double sec = i / 1000.0;
-								<!-- Convert to seconds -->
 								<span class="scaleLabel" style="left:@(i)px;">@sec</span>
 							}
 						}
@@ -120,12 +125,17 @@
 		addAudio(AudioUtils.CreateTestAudio());
 	}
 
-	protected void addAudio(Audio audio) // add some audio
+	public void addAudio(Audio audio) // add some audio
 	{
 		Audios.Add(audio);
 
 		string color = colors[Audios.Count % colors.Length];
 		audioColors[audio] = color;
+	}
+
+	public void removeAudio(Audio audio) // remove specific audio
+	{
+		Audios.Remove(audio);
 	}
 
 	List<Audio> selected = StorageService.selected;
