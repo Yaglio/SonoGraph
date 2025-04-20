@@ -51,6 +51,14 @@ window.stopAudio = (id) => {
     oscillators.delete(id);
 }
 
+window.stopAllAudio = () => {
+    for (const [id, oscillator] of oscillators.entries()) {
+        oscillator.stop();
+    }
+    oscillators.clear();
+    console.log("All audio stopped.");
+}
+
 class Oszillator {
     constructor(waveForm, audioContext) {
         this.audioContext = audioContext;

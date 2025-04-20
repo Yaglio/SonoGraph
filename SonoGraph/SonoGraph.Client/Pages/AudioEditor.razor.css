@@ -4,7 +4,7 @@
 /* Global header */
 .gHeader {
     display: flex;
-    height: 10%;
+    height: 60px;
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
@@ -29,58 +29,128 @@
 
 /* Specific elements */
 .editorcontainer {
+    --grey: rgb(150, 150, 150);
+    --delete: rgb(180, 0, 0);
+    --deleteH: rgb(255, 120, 120);
+    --tool: rgb(180, 180, 180);
+    --toolH: rgb(220, 220, 220);
     display: flex;
     width: 1700px;
-    height: 88%;
+    height: 865px;
 }
 
 .contentcontainer {
+    position: relative;
     height: 100%;
     width: 85%;
-    background-color: darkgrey;
+    background-color: grey;
     overflow: auto;
     padding: 10px;
-    border-bottom: 2px solid;
-    border-top: 2px solid;
+    border-bottom: 2px solid black;
+    border-top: 2px solid black;
+    color: lightgrey;
+    text-shadow: 1px 1px 1px black;
+}
+
+.audioItem {
+    display: inline-flex;
+    margin: 10px;
+}
+
+.audioIndex {
+    margin: auto auto auto auto;
+    font-size: 1.2rem;
+    color: lightgrey;
+    width: 30px;
+}
+
+.scale {
+    position: relative;
+    left: 48px;
+    height: 40px;
+    background-color: rgb(0, 0, 0, 0.5);
+}
+
+.scaleMark {
+    position: absolute;
+    top: 2px;
+    margin-left: 2px;
+    height: 10px;
+    border: 1px solid lightgrey;
+}
+
+.scaleLabel {
+    position: absolute;
+    bottom: 0;
+    margin-left: 3px;
+    transform: translateX(-50%);
+    font-size: 15px;
 }
 
 .bar {
     display: block;
     height: 100px;
-    background-color: lightgrey;
     margin: 10px;
+    border-radius: 15px;
+    text-align: left;
 }
-
-    .bar:focus {
-        background-color: white;
-        transition-duration: 100ms;
-    }
 
 .toolcontainer {
     width: 15%;
-    background-color: lightseagreen;
+    background-color: rgb(0, 140, 100);
+    color: lightgrey;
+    text-shadow: 1px 1px 1px black;
     padding: 10px;
     border: 2px solid;
+    border-color: black;
 }
 
 .toolCat {
-    border: 2px dashed black;
-    margin-top: 10px;
+    border: 1px solid var(--grey);
+    margin-top: 20px;
     margin-bottom: 40px;
+}
+
+.toolCatName {
     text-align: center;
+    font: 20px italic;
+    text-shadow: 1px 1px 1px black;
+    color: lightgrey;
+    margin: 5px;
 }
 
 .tool {
     display: block;
     border: 5px groove;
-    margin: 10px;
-    width: 205px;
+    border-radius: 5px;
+    margin: auto auto 10px auto;
+    width: 200px;
+    font-size: 15px;
+    background-color: var(--tool);
 }
 
-.tool:hover {
-    background-color: lightgrey;
-}
+    .tool:hover {
+        background-color: var(--toolH);
+    }
 
     .tool:active {
-        background-color: grey;
+        background-color: var(--tool);
+    }
+
+.toolD {
+    display: block;
+    border: 5px groove;
+    border-radius: 5px;
+    margin: auto auto 10px auto;
+    width: 200px;
+    font-size: 15px;
+    background-color: var(--delete);
+}
+
+    .toolD:hover {
+        background-color: var(--deleteH);
+    }
+
+    .toolD:active {
+        background-color: var(--delete);
     }

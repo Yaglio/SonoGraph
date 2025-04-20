@@ -6,6 +6,7 @@ namespace SonoGraph.Client.Services
     public class AudioPlayerService
     {
         private readonly IJSRuntime jSRuntime;
+        private int? currentId = null; // To store the current audio id
         public double MasterVolume { get; set; } = 50;
 
         public AudioPlayerService(IJSRuntime JSRuntime)
@@ -33,23 +34,23 @@ namespace SonoGraph.Client.Services
         /// <returns></returns>
         public async Task Play(IAsyncEnumerable<Sound> sounds, WaveFormType waveForm, CancellationToken cancellationToken)
         {
-            var id = await jSRuntime.InvokeAsync<int>("startAudio", waveForm.Value);
+            currentId = await jSRuntime.InvokeAsync<int>("startAudio", waveForm.Value);
 
             try
             {
                 await foreach (var sound in sounds.WithCancellation(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await jSRuntime.InvokeVoidAsync("playAudio", id, sound.Frequency, sound.Amplitude * MasterVolume / 100);
+                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100);
                 }
             }
             catch (OperationCanceledException)
             {
-                
+
             }
             finally
             {
-                await jSRuntime.InvokeVoidAsync("stopAudio", id);
+                await jSRuntime.InvokeVoidAsync("stopAudio", currentId);
             }
         }
 
@@ -68,7 +69,7 @@ namespace SonoGraph.Client.Services
             }
 
 
-            await Play(StreamSound(),waveForm ,cancellationToken);
+            await Play(StreamSound(), waveForm, cancellationToken);
         }
 
         /// <summary>
@@ -89,8 +90,13 @@ namespace SonoGraph.Client.Services
 
             }
 
-            await Play(StreamSound(), audio.WaveForm, cancellationToken);    
+            await Play(StreamSound(), audio.WaveForm, cancellationToken);
         }
-
+        public async Task StopAudio()
+        {
+            // Stop the audio via JS interop
+            await jSRuntime.InvokeVoidAsync("stopAllAudio");
+            currentId = null;
+        }
     }
 }

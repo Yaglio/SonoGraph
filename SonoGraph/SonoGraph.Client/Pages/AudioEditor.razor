@@ -2,56 +2,110 @@
 @rendermode InteractiveWebAssembly
 
 @inject AudioPlayerService audioPlayerService
+@inject StorageService storageService
 
 @using SonoGraph.Client.Models
 
-<!--test header to show global volume. Header is removeable-->
+<!--test header to show global volume. Header is removable-->
 <header class="gHeader">
 	<h3 class="pageTitle">Audio Editor</h3>
 	<span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
 	<input class="globalVol" type="range" min="0" max="100" @bind="@audioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
-<div class="editorcontainer">
-	<div class="contentcontainer">
-		<h3>Audio tracks</h3>
-		@foreach (var Audio in Audios)
-		{
-			<button type="button"
-			class="bar"
-			style="width: @(getWidth(Audio))px;"
-			@onfocus="@(() => SelectBar(Audio))"
-			@onblur="@(() => ClearSelection())">
-			</button>
-		}
+<CascadingValue Value="storageService">
+	<div class="editorcontainer">
+		<div class="contentcontainer">
+			<h3>Audio tracks</h3>
+			@foreach (var Audio in Audios)
+			{
+				<div class="audioItem">
+					<!-- Index of the Audio bar -->
+					<span class="audioIndex">@(Audios.IndexOf(Audio) + 1)</span>
 
-	</div>
-	<div class="toolcontainer">
-		<h3>Tools</h3>
-		<div class="toolCat">
-			Audio modification
-			<button class="tool" @onclick="DeleteSelected">Delete Selected</button>
-			<button class="tool" @onclick="addAudio">Add test audio</button>
-			<button class="tool" @onclick="merge">Merge tracks</button>
+					<button type="button"
+					class="bar"
+					style="width: @(getWidth(Audio))px;
+                           background-color: @audioColors[Audio];
+                           border: @(selected.Contains(Audio) ? "3px solid #FF6347" : "2px solid black");"
+					@onclick="@(() => SelectBar(Audio))">
+						@(Audio.GetHashCode())
+					</button>
+				</div>
+			}
+
+			<!-- Scale at the bottom of the content container -->
+			<div class="scale" style="width:@(getMaxWidth())px;">
+				@{
+					double max = getMaxWidth();
+					if (max > 0)
+					{
+						@for (int i = 0; i < max; i += 50)
+						{
+							<span class="scaleMark" style="left:@(i)px;"></span>
+							@if (i % 100 == 0)
+							{
+								double sec = i / 1000.0;
+								<!-- Convert to seconds -->
+								<span class="scaleLabel" style="left:@(i)px;">@sec</span>
+							}
+						}
+					}
+				}
+			</div>
 		</div>
-		<div class="toolCat">
-			Playback control
-			<button class="tool">Play</button>
-			<button class="tool">Stop</button>
+		<div class="toolcontainer">
+			<h3>Tools</h3>
+			<p>@getHash()</p>
+			<div class="toolCat">
+				<p class="toolCatName">Audio modification</p>
+				<button class="toolD" @onclick="DeleteSelected">Delete selected</button>
+				<button class="toolD" @onclick="DeleteAll">Delete all</button>
+				<button class="tool" @onclick="addAudio">Add test audio</button>
+				<button class="tool" @onclick="merge">Merge tracks</button>
+			</div>
+			<div class="toolCat">
+				<p class="toolCatName">Playback control</p>
+				<button class="tool" @onclick="play">Play</button>
+				<button class="tool" @onclick="stop">Stop</button>
+			</div>
 		</div>
 	</div>
-</div>
+</CascadingValue>
 
 @code {
-	List<Audio> Audios = new();
-
-	protected int getWidth(Audio audio)
+	List<Audio> Audios = StorageService.Audios;
+	String[] colors =
 	{
-		int width = 0;
-		foreach (var Sound in audio.Sounds) {
-			width += (int) Sound.Duration;
+		"#FF9F80", // Light Red-Orange
+        "#80FF9F", // Light Green
+        "#809FFF", // Light Blue
+        "#F1E0A3", // Light Yellow
+        "#D7A1D4", // Soft Purple
+        "#F1A15F", // Soft Orange
+        "#70D1D1", // Light Turquoise
+        "#A1E1A1", // Soft Emerald Green
+        "#F1C676", // Soft Golden Yellow
+        "#B58BCA"  // Light Dark Purple
+		};
+
+	protected string getHash()
+	{
+		return selected.Count > 0 ? $"selected {selected.Count} track(s)" : "no tracks selected";
+	}
+
+	protected double getWidth(Audio audio)
+	{
+		return AudioUtils.GetDuration(audio);
+	}
+
+	protected double getMaxWidth()
+	{
+		if (Audios.Any())
+		{
+			return Audios.Max(audio => getWidth(audio));
 		}
-		return width;
+		return 0;
 	}
 
 	protected override void OnInitialized()
@@ -59,61 +113,67 @@
 		base.OnInitialized();
 	}
 
-	protected void addAudio()
+	Dictionary<Audio, string> audioColors = StorageService.audioColors;
+
+	protected void addAudio() // add test audio
 	{
-		int[] Durations = { 20, 50, 10, 5000, 100, 150, 110, 135 };
-		List<Sound> Sounds = new List<Sound>();
-		foreach (int Duration in Durations)
-		{
-			Sounds.Add(new Sound(50.0, 50.0, Duration));
-		}
-		Audio audio = new Audio(WaveFormType.Sine, Sounds);
-		Audios.Add(audio);
+		addAudio(AudioUtils.CreateTestAudio());
 	}
 
-	Audio? selected = null;
-	bool isDeleting = false;
+	protected void addAudio(Audio audio) // add some audio
+	{
+		Audios.Add(audio);
+
+		string color = colors[Audios.Count % colors.Length];
+		audioColors[audio] = color;
+	}
+
+	List<Audio> selected = StorageService.selected;
 
 	void SelectBar(Audio audio)
 	{
-		selected = audio;
-	}
-
-	async void ClearSelection()
-	{
-		await Task.Delay(200);
-		if (!isDeleting)
+		if (selected.Contains(audio))
 		{
-			selected = null;
+			selected.Remove(audio);
+		}
+		else
+		{
+			selected.Add(audio);
 		}
 	}
 
 	void DeleteSelected()
 	{
-		isDeleting = true;
-
-		if (selected != null)
+		foreach (var audio in selected)
 		{
-			Audios.Remove(selected);
-			selected = null;
+			Audios.Remove(audio);
 		}
-
-		isDeleting = false;
+		selected.Clear();
 	}
 
-	Audio? toMerge = null;
+	void DeleteAll()
+	{
+		Audios.Clear();
+		selected.Clear();
+	}
 
 	void merge()
 	{
-		if (toMerge != null)
+		if (selected.Count > 1)
 		{
+			// TODO call external merge method
 			DeleteSelected();
-			Audios.Remove(toMerge);
-			toMerge = null;
-		} else
-		if (selected != null)
-		{
-			toMerge = selected;
 		}
+	}
+
+	private async Task play()
+	{
+		await audioPlayerService.Initialize();
+		await audioPlayerService.Play(selected.First(), new CancellationToken());
+	}
+
+	private async Task stop()
+	{
+		await audioPlayerService.StopAudio();
 	}
 }
