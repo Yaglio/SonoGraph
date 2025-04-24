@@ -13,11 +13,15 @@
         /// </summary>
         public double Duration { get; set; }
 
+        public int Id { get; }
+        private static int nextID = 0;
+
         public Sound(double frequency, double amplitude, double duration)
         {
             Frequency = frequency;
             Amplitude = amplitude;
             Duration = duration;
+            Id = nextID++;
         }
     }
 }

@@ -58,10 +58,10 @@
 }
 
 .audioIndex {
-    margin: auto auto auto auto;
+    margin: auto 10px auto -10px;
     font-size: 1.2rem;
-    color: lightgrey;
-    width: 30px;
+    color: black;
+    width: 40px;
 }
 
 .scale {
@@ -88,11 +88,9 @@
 }
 
 .bar {
-    display: block;
-    height: 100px;
-    margin: 10px;
-    border-radius: 15px;
-    text-align: left;
+    display: inline-block;
+    margin: auto 0 0 0;
+    border: 1px solid black;
 }
 
 .toolcontainer {
@@ -103,6 +101,10 @@
     padding: 10px;
     border: 2px solid;
     border-color: black;
+}
+
+.counter {
+    white-space: pre-wrap;
 }
 
 .toolCat {
