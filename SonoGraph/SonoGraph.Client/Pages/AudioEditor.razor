@@ -17,6 +17,7 @@ Adding Buttons for new tools
 Author: DaveH-->
 
 <!--global header-->
+
 <header class="gHeader">
 	<h3 class="pageTitle">Audio Editor</h3>
 	<span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
@@ -88,10 +89,12 @@ Author: DaveH-->
 				<p class="toolCatName">Playback control</p>
 				<button class="tool" @onclick="play">Play</button>
 				<button class="tool" @onclick="stop">Stop</button>
+				<p class="toolCatName">Time: @playTime</p>
 			</div>
 		</div>
 	</div>
 </CascadingValue>
+
 
 @code {
 	private double scaleWidth = 0.2;
@@ -329,19 +332,30 @@ Author: DaveH-->
 	}
 
 	private Dictionary<Audio, CancellationTokenSource> playbackTokens = new();
+	private CancellationTokenSource? timeTrackerCts;
+	private int playTime;
 
 	private async Task play()
 	{
 		await stop();
+		if (!SelectedAudios.Any())
+			return; // Nothing to play
 		await audioPlayerService.Initialize();
+		playTime = 0;
 
 		foreach (var audio in SelectedAudios)
 		{
 			var cts = new CancellationTokenSource();
+			if (timeTrackerCts == null)
+			{
+				timeTrackerCts = cts;
+			}
 			playbackTokens[audio] = cts;
 
 			_ = PlayAudioAsync(audio, cts.Token);
 		}
+
+		_ = TrackPlayTimeAsync(timeTrackerCts.Token);
 	}
 
 	private async Task PlayAudioAsync(Audio audio, CancellationToken token)
@@ -356,6 +370,20 @@ Author: DaveH-->
 		}
 	}
 
+	private async Task TrackPlayTimeAsync(CancellationToken token)
+	{
+		try
+		{
+			while (!token.IsCancellationRequested)
+			{
+				await Task.Delay(1000, token);
+				playTime++;
+				await InvokeAsync(StateHasChanged);
+			}
+		}
+		catch (TaskCanceledException) { }
+	}
+
 	private async Task stop()
 	{
 		foreach (var kv in playbackTokens)
@@ -363,8 +391,12 @@ Author: DaveH-->
 			kv.Value.Cancel();
 		}
 
+		timeTrackerCts?.Cancel();
+		timeTrackerCts = null;
+
 		await Task.Delay(100);
 
 		playbackTokens.Clear();
+		playTime = 0;
 	}
 }
