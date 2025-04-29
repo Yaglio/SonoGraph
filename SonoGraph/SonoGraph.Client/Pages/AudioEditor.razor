@@ -7,11 +7,11 @@
 @using SonoGraph.Client.Models
 
 <!--AudioEditor UI. Has functions to display and delete many audios at once and to control the playback of audios.
-Merge and other tools require external methods (Anna), input comes from external source via addAudio(Audio).
-For removing an audio use removeAudio(Audio).
+API:
+removeAudio(Audio), addAudio(Audio), getParent(Sound), getSelectedAudios(), getSelectedSounds()
 
-Author: DaveH
--->
+Author: DaveH-->
+
 <!--global header-->
 <header class="gHeader">
 	<h3 class="pageTitle">Audio Editor</h3>
@@ -36,7 +36,7 @@ Author: DaveH
 					{
 						<button type="button"
 						class="bar"
-								style="width: @(sound.Duration * scaleWidth)px;
+						style="width: @(sound.Duration * scaleWidth)px;
 								height: @(getHeight(sound.Frequency))px;
 								background-color: @audioColors[audio];
 								border: @(SelectedSounds.Contains(sound) || SelectedAudios.Contains(audio) ? "2px solid #FF6347" : "2px solid black");"
@@ -72,7 +72,7 @@ Author: DaveH
 		</div>
 		<div class="toolcontainer">
 			<h3>Tools</h3>
-			<p class="counter">@getCount()</p>
+			<p class="counter">@getCount()@getFirstSound()</p>
 			<div class="toolCat">
 				<p class="toolCatName">Audio modification</p>
 				<button class="toolD" @onclick="DeleteSelected">Delete selected</button>
@@ -138,6 +138,16 @@ Author: DaveH
 		return sw.ToString();
 	}
 
+	protected string getFirstSound()
+	{
+		if (SelectedSounds.Any())
+		{
+			Sound last = SelectedSounds.Last();
+			return (int)last.Frequency + "hz";
+		}
+		return "\n";
+	}
+
 	protected double getWidth(Audio audio)
 	{
 		return AudioUtils.GetDuration(audio);
@@ -162,6 +172,47 @@ Author: DaveH
 	protected void addAudio() // add test audio
 	{
 		addAudio(AudioUtils.CreateTestAudio());
+		List<Sound> test = new List<Sound>();
+		int[] freqs = {
+    // 10 - 990 Hz, Schrittgröße 10
+    20, 30, 40, 50, 60, 70, 80, 90,
+	100, 110, 120, 130, 140, 150, 160, 170, 180, 190,
+	200, 210, 220, 230, 240, 250, 260, 270, 280, 290,
+	300, 310, 320, 330, 340, 350, 360, 370, 380, 390,
+	400, 410, 420, 430, 440, 450, 460, 470, 480, 490,
+	500, 510, 520, 530, 540, 550, 560, 570, 580, 590,
+	600, 610, 620, 630, 640, 650, 660, 670, 680, 690,
+	700, 710, 720, 730, 740, 750, 760, 770, 780, 790,
+	800, 810, 820, 830, 840, 850, 860, 870, 880, 890,
+	900, 910, 920, 930, 940, 950, 960, 970, 980, 990,
+
+    // 1000 - 20000 Hz, Schrittgröße 100
+    1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900,
+	2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900,
+	3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900,
+	4000, 4100, 4200, 4300, 4400, 4500, 4600, 4700, 4800, 4900,
+	5000, 5100, 5200, 5300, 5400, 5500, 5600, 5700, 5800, 5900,
+	6000, 6100, 6200, 6300, 6400, 6500, 6600, 6700, 6800, 6900,
+	7000, 7100, 7200, 7300, 7400, 7500, 7600, 7700, 7800, 7900,
+	8000, 8100, 8200, 8300, 8400, 8500, 8600, 8700, 8800, 8900,
+	9000, 9100, 9200, 9300, 9400, 9500, 9600, 9700, 9800, 9900,
+	10000, 10100, 10200, 10300, 10400, 10500, 10600, 10700, 10800, 10900,
+	11000, 11100, 11200, 11300, 11400, 11500, 11600, 11700, 11800, 11900,
+	12000, 12100, 12200, 12300, 12400, 12500, 12600, 12700, 12800, 12900,
+	13000, 13100, 13200, 13300, 13400, 13500, 13600, 13700, 13800, 13900,
+	14000, 14100, 14200, 14300, 14400, 14500, 14600, 14700, 14800, 14900,
+	15000, 15100, 15200, 15300, 15400, 15500, 15600, 15700, 15800, 15900,
+	16000, 16100, 16200, 16300, 16400, 16500, 16600, 16700, 16800, 16900,
+	17000, 17100, 17200, 17300, 17400, 17500, 17600, 17700, 17800, 17900,
+	18000, 18100, 18200, 18300, 18400, 18500, 18600, 18700, 18800, 18900,
+	19000, 19100, 19200, 19300, 19400, 19500, 19600, 19700, 19800, 19900,
+	20000
+};
+		foreach(int freq in freqs)
+		{
+			test.Add(new Sound(freq, 10, 100));
+		}
+		addAudio(new Audio(WaveFormType.Sine, test));
 	}
 
 	public void addAudio(Audio audio) // add some specific audio
@@ -196,12 +247,12 @@ Author: DaveH
 		return null;
 	}
 
-	public List<Audio> getSelectedAudios()
+	public List<Audio> getSelectedAudios() // get selected Audios
 	{
 		return SelectedAudios;
 	}
 
-	public List<Sound> getSelectedSounds()
+	public List<Sound> getSelectedSounds() // get selected Sounds
 	{
 		return SelectedSounds;
 	}
@@ -214,6 +265,10 @@ Author: DaveH
 		}
 		else
 		{
+			foreach (var sound in audio.Sounds)
+			{
+				SelectedSounds.Remove(sound);
+			}
 			SelectedAudios.Add(audio);
 		}
 	}
