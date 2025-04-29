@@ -10,6 +10,10 @@
 API:
 removeAudio(Audio), addAudio(Audio), getParent(Sound), getSelectedAudios(), getSelectedSounds()
 
+TODO: External methods for audio editing (also removeSelected is unfinished).
+Getting input from drawing board.
+Adding Buttons for new tools
+
 Author: DaveH-->
 
 <!--global header-->
@@ -295,6 +299,9 @@ Author: DaveH-->
 
 	void DeleteSelected()
 	{
+
+		// if selectedSounds not empty, call external method to remove Sounds
+
 		foreach (var audio in SelectedAudios)
 		{
 			removeAudio(audio);
