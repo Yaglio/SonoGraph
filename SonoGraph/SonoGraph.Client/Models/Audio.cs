@@ -35,6 +35,12 @@ namespace SonoGraph.Client.Models
         {
             return audio.Sounds.Sum(sound => sound.Duration);
         }
+
+        //ToDo
+        public static Audio MergeAudios(List<Audio> audios)
+        {
+            
+        }
     }
 
 }

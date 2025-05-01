@@ -23,5 +23,10 @@
             Duration = duration;
             Id = nextID++;
         }
+
+        public static void ChangeFrequency(Sound sound, double frequency)
+        {
+            sound.Frequency = frequency;
+        }
     }
 }
