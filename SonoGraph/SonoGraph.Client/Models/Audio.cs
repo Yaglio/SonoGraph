@@ -36,11 +36,21 @@ namespace SonoGraph.Client.Models
             return audio.Sounds.Sum(sound => sound.Duration);
         }
 
-        //ToDo
         public static Audio MergeAudios(List<Audio> audios)
         {
-            
+            if (audios == null || audios.Count == 0)
+                return null;
+
+            int minLength = audios.Min(a => a.Sounds.Count);
+            List<Sound> mergedSounds = new List<Sound>();
+
+            for (int i = 0; i < minLength; i++)
+            {
+                double avgFrequency = audios.Average(a => a.Sounds[i].Frequency);
+                mergedSounds.Add(new Sound { Frequency = avgFrequency });
+            }
+
+            return new Audio(audios[0].WaveForm, mergedSounds);
         }
     }
-
 }
