@@ -28,5 +28,15 @@
         {
             sound.Frequency = frequency;
         }
+
+        public static void ChangeAmplitude(Sound sound, double amplitude)
+        {
+            sound.Amplitude = amplitude;
+        }
+
+        public static void ChangeDuration(Sound sound, double duration)
+        {
+            sound.Duration = duration;
+        }
     }
 }
