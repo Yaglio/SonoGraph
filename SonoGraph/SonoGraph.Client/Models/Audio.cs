@@ -86,6 +86,10 @@ namespace SonoGraph.Client.Models
 
             else
             {
+                if (audios[0].Sounds[0].Duration < 100)
+                {
+                    return audios;
+                }
                 int j = 0;
                 foreach(Audio audio in audios)
                 {

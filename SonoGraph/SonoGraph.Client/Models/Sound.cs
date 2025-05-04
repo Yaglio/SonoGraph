@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a sound with a frequency and amplitude.
     /// </summary>
-    public struct Sound
+    public class Sound
     {
         public double Frequency { get; set; }
         public double Amplitude { get; set; }
@@ -24,19 +24,22 @@
             Id = nextID++;
         }
 
-        public static void ChangeFrequency(Sound sound, double frequency)
+        public static void ChangeFrequency(List<Sound> selectedSounds, double frequency)
         {
-            sound.Frequency = frequency;
+            for (int i = 0; i < selectedSounds.Count; i++)
+            {
+                Sound sound = selectedSounds[i];
+                sound.Frequency = frequency;
+            }
         }
 
-        public static void ChangeAmplitude(Sound sound, double amplitude)
+        public static void ChangeAmplitude(List<Sound> selectedSounds, double amplitude)
         {
-            sound.Amplitude = amplitude;
-        }
-
-        public static void ChangeDuration(Sound sound, double duration)
-        {
-            sound.Duration = duration;
+            for(int i = 0; i < selectedSounds.Count; i++)
+            {
+                Sound sound = selectedSounds[i];
+                sound.Amplitude = amplitude;
+            }
         }
     }
 }
