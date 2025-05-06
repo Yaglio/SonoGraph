@@ -327,6 +327,7 @@ Author: DaveH-->
 		if (SelectedAudios.Count > 1)
 		{
 			// TODO call external merge method
+			addAudio(AudioUtils.MergeAudios(SelectedAudios));
 			DeleteSelected();
 		}
 	}

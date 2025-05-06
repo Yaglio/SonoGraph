@@ -55,7 +55,6 @@ namespace SonoGraph.Client.Models
             }
 
             return new Audio(audios[0].WaveForm, mergedSounds);
-            //@David H; siehe nächste Methode hier bitte auch noch die ursprünglichen Listen löschen, danki
         }
 
         //Shortens the Audio to half of its original length, either by uniting neighbouring Sounds (compress == true, changes the exact melody a little but gives a smaller and easier to edit list) or by simply halving the duration (compress == false)
