@@ -105,9 +105,9 @@
 
         await JSRuntime.InvokeVoidAsync("draw", x, y);
 
-        // await SendDrawData(_mouse, dateTime)
+        //await SendDrawData(_mouse, dateTime)
 
-        // await SoundService.ProcessSound(PostionObjekt);
+        await SoundService.ProcessSound(new Coordinate(x, y));
     }
 
     private async Task StopDrawing()
