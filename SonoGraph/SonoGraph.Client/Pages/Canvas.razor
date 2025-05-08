@@ -5,6 +5,7 @@
 
 @inject IJSRuntime JSRuntime
 @inject AudioPlayerService audioPlayerService
+@inject SoundService soundService
 
 <!--test header to show global volume. Header is removeable-->
 <header class="gHeader">
@@ -97,6 +98,7 @@
         await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
 
         _isDrawing = true;
+        await soundService.StartSound(new Coordinate(x, y));
     }
 
     private async Task Draw(double x, double y)
@@ -107,7 +109,7 @@
 
         //await SendDrawData(_mouse, dateTime)
 
-        await SoundService.ProcessSound(new Coordinate(x, y));
+        await soundService.ProcessSound(new Coordinate(x, y));
     }
 
     private async Task StopDrawing()
@@ -124,5 +126,7 @@
         await JSRuntime.InvokeVoidAsync("clearCanvas");
 
         _isCooldown = false;
+
+        await soundService.EndSound();
     }
 }
