@@ -9,45 +9,53 @@ namespace SonoGraph.Client.Services
     public class SoundService
     {
         Audio audio {  get; set; }
-        DateTime DateTime { get; set; }
-        CancellationTokenSource CancellationTokenSource { get; set; }
-        AudioPlayerService AudioPlayerService { get; set; }
+        DateTime dateTime { get; set; }
+        CancellationTokenSource cancellationTokenSource { get; set; }
+        AudioPlayerService audioPlayerService { get; set; }
+        AsyncSoundStream? asyncSoundStream;
         public SoundService (AudioPlayerService Service) {
-            AudioPlayerService = Service;
+            audioPlayerService = Service;
             audio = new Audio(WaveFormType.Sine, new List<Sound> { });
-            DateTime = DateTime.Now;
-            CancellationTokenSource = new CancellationTokenSource();
+            dateTime = DateTime.Now;
+            cancellationTokenSource = new CancellationTokenSource();
         }
 
         public async Task StartSound(Coordinate coordinate, WaveFormType waveForm)
         {
             Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
-            DateTime = DateTime.Now;
+            dateTime = DateTime.Now;
+            audio.Sounds.Add(sound);
+            asyncSoundStream = AsyncSoundStream.Create();
+            asyncSoundStream.AddSound(sound);
+            await PlaySound(sound);
 
         }
 
         public async Task ProcessSound(Coordinate coordinate)
         {
             Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
+            DateTime newDateTime = DateTime.Now; 
             if (audio.Sounds.Count > 0)
             {
-                audio.Sounds.Last().Duration = (newDateTime.Subtract(DateTime)).TotalMilliseconds;
-                CancellationTokenSource.Cancel();
-                CancellationTokenSource = new CancellationTokenSource();
+                audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             }
-            DateTime = newDateTime;
+            dateTime = newDateTime;
             audio.Sounds.Add(sound);
-            //playSound(sound);
+            asyncSoundStream.AddSound(sound);
+            await PlaySound(sound);
         }
 
         public async Task EndSound()
         {
-
+            DateTime newDateTime = DateTime.Now;
+            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
+            asyncSoundStream.Complete();
+            StorageService.Audios.Add(audio);
         }
 
-        public void PlaySound(Sound sound)
+        public async Task PlaySound(Sound sound)
         {
-            AudioPlayerService.Play(sound, audio.WaveForm, CancellationTokenSource.Token);
+            await audioPlayerService.Play(asyncSoundStream.GetSoundsAsync(cancellationTokenSource.Token), audio.WaveForm, cancellationTokenSource.Token);
         }
     }
 }

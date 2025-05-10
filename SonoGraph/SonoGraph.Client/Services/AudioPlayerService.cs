@@ -12,6 +12,7 @@ namespace SonoGraph.Client.Services
         public AudioPlayerService(IJSRuntime JSRuntime)
         {
             jSRuntime = JSRuntime;
+            Initialize();
         }
 
         /// <summary>

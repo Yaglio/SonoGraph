@@ -9,7 +9,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<AudioPlayerService>();
-builder.Services.AddSingleton<StorageService>();
+builder.Services.AddScoped<StorageService>();
+builder.Services.AddScoped<SoundService>();
 
 var app = builder.Build();
 

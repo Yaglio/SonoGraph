@@ -13,7 +13,7 @@ namespace SonoGraph.Client.Services
         }
 
         /// <summary>
-        /// Creates a new instance of the AsyncSoundStream class.
+        /// Creates a new instance of the asyncSoundStream class.
         /// </summary>
         /// <returns></returns>
         public static AsyncSoundStream Create()

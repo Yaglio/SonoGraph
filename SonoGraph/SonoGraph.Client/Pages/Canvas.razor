@@ -98,7 +98,7 @@
         await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
 
         _isDrawing = true;
-        await soundService.StartSound(new Coordinate(x, y));
+        await soundService.StartSound(new Coordinate(x, y), WaveFormType.Sine);
     }
 
     private async Task Draw(double x, double y)
