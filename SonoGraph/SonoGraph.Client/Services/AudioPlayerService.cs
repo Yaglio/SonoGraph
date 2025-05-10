@@ -3,7 +3,7 @@ using SonoGraph.Client.Models;
 
 namespace SonoGraph.Client.Services
 {
-    public class AudioPlayerService
+    public class AudioPlayerService : IInitializableService
     {
         private readonly IJSRuntime jSRuntime;
         private int? currentId = null; // To store the current audio id
@@ -12,7 +12,6 @@ namespace SonoGraph.Client.Services
         public AudioPlayerService(IJSRuntime JSRuntime)
         {
             jSRuntime = JSRuntime;
-            Initialize();
         }
 
         /// <summary>
