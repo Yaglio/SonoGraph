@@ -8,15 +8,13 @@ namespace SonoGraph.Client.Services
 {
     public class SoundService
     {
-        Audio audio {  get; set; }
-        DateTime dateTime { get; set; }
-        CancellationTokenSource cancellationTokenSource { get; set; }
-        AudioPlayerService audioPlayerService { get; set; }
-        AsyncSoundStream? asyncSoundStream;
+        private Audio ? audio = null;
+        private DateTime dateTime;
+        private CancellationTokenSource cancellationTokenSource;
+        private readonly AudioPlayerService audioPlayerService;
+        private AsyncSoundStream? asyncSoundStream;
         public SoundService (AudioPlayerService Service) {
             audioPlayerService = Service;
-            audio = new Audio(WaveFormType.Sine, new List<Sound> { });
-            dateTime = DateTime.Now;
             cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -24,6 +22,7 @@ namespace SonoGraph.Client.Services
         {
             Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
             dateTime = DateTime.Now;
+            audio = new Audio(waveForm, new List<Sound>());
             audio.Sounds.Add(sound);
             asyncSoundStream = AsyncSoundStream.Create();
             asyncSoundStream.AddSound(sound);
@@ -33,28 +32,37 @@ namespace SonoGraph.Client.Services
 
         public async Task ProcessSound(Coordinate coordinate)
         {
-            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
-            DateTime newDateTime = DateTime.Now; 
-            if (audio.Sounds.Count > 0)
+            if (asyncSoundStream == null || audio == null)
             {
-                audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
+                throw new InvalidOperationException("Sound has not started");
             }
+            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
+            DateTime newDateTime = DateTime.Now;
+            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             dateTime = newDateTime;
             audio.Sounds.Add(sound);
             asyncSoundStream.AddSound(sound);
             await PlaySound(sound);
         }
 
-        public async Task EndSound()
+        public void EndSound()
         {
+            if (asyncSoundStream == null || audio == null)
+            {
+                throw new InvalidOperationException("Sound has not started");
+            }
             DateTime newDateTime = DateTime.Now;
             audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             asyncSoundStream.Complete();
             StorageService.Audios.Add(audio);
         }
 
-        public async Task PlaySound(Sound sound)
+        private async Task PlaySound(Sound sound)
         {
+            if (asyncSoundStream == null || audio == null)
+            {
+                throw new InvalidOperationException("Sound has not started");
+            }
             await audioPlayerService.Play(asyncSoundStream.GetSoundsAsync(cancellationTokenSource.Token), audio.WaveForm, cancellationTokenSource.Token);
         }
     }
