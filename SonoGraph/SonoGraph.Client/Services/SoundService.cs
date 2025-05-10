@@ -13,9 +13,11 @@ namespace SonoGraph.Client.Services
         private CancellationTokenSource cancellationTokenSource;
         private readonly AudioPlayerService audioPlayerService;
         private AsyncSoundStream? asyncSoundStream;
-        public SoundService (AudioPlayerService Service) {
+        private readonly StorageService storageService;
+        public SoundService (AudioPlayerService Service, StorageService storage) {
             audioPlayerService = Service;
             cancellationTokenSource = new CancellationTokenSource();
+            storageService = storage;
         }
 
         public async Task StartSound(Coordinate coordinate, WaveFormType waveForm)
@@ -54,7 +56,7 @@ namespace SonoGraph.Client.Services
             DateTime newDateTime = DateTime.Now;
             audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             asyncSoundStream.Complete();
-            StorageService.Audios.Add(audio);
+            storageService.Audios.Add(audio);
         }
 
         private async Task PlaySound(Sound sound)
