@@ -20,8 +20,8 @@ namespace SonoGraph.Client.Models
         public static Audio CreateTestAudio()
         {
             double baseFrequency = 440; // A4 note
-            double modulationDepth = 100; // How much the frequency shifts
-            double modulationSpeed = 0.1; // Controls the oscillation ratio
+            double modulationDepth = 300; // How much the frequency shifts
+            double modulationSpeed = 0.5; // Controls the oscillation ratio
 
             return new Audio(WaveFormType.Sine, Enumerable
                     .Range(0, 300)
