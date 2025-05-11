@@ -85,10 +85,6 @@ namespace SonoGraph.Client.Models
 
             else
             {
-                if (audios[0].Sounds[0].Duration < 100)
-                {
-                    return audios;
-                }
                 int j = 0;
                 foreach(Audio audio in audios)
                 {
@@ -96,7 +92,14 @@ namespace SonoGraph.Client.Models
                     foreach(Sound sound in audio.Sounds)
                     {
                         double newDuration = sound.Duration / 2;
-                        sounds.Add(new Sound(sound.Frequency, sound.Amplitude, newDuration));
+                        if(newDuration >= 50)
+                        {
+                            sounds.Add(new Sound(sound.Frequency, sound.Amplitude, newDuration));
+                        }
+                        else
+                        {
+                            sounds.Add(new Sound(sound.Frequency, sound.Amplitude, 50));
+                        }
                     }
                     shortened.Add(new Audio(audios[j].WaveForm, sounds));
                     j++;
@@ -104,7 +107,6 @@ namespace SonoGraph.Client.Models
             }
 
             return shortened;
-            //@David H: Du müsstest bei Funktionsaufruf dann noch die alten Audios rauslöschen, ich weiß nich, wie ich auf die Referenzen von deinen Audios von hier aus zugreifen kann, dankeeeee
         }
     }
 }
