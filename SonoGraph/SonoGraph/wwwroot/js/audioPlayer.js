@@ -26,14 +26,15 @@ window.startAudio = (waveForm) => {
     return oscillatorIdCounter;
 };
 
-window.playAudio = (id, frequency, amplitude) => {
+window.playAudio = (id, frequency, amplitude, duration) => {
+    console.log("Playing Sound with:", frequency, amplitude, duration);
     const osc = oscillators.get(id);
     if (!osc) {
         console.error("Invalid oscillator id:", id);
         return;
     }
 
-    osc.play(frequency, amplitude);
+    osc.play(frequency, amplitude, duration);
 };
 
 window.stopAudio = (id) => {
@@ -64,7 +65,7 @@ class Oszillator {
         this.voices = new Set(); // alle aktiven Mini-Oszillatoren
     }
 
-    play(frequency, amplitude) {
+    play(frequency, amplitude, duration) {
         const now = this.audioContext.currentTime;
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
@@ -75,7 +76,6 @@ class Oszillator {
         gain.gain.setValueAtTime(0, now); // Start bei 0
         gain.gain.linearRampToValueAtTime(amplitude, now + 0.05); // sanft rein in 10ms
 
-        const duration = 0.2;
         gain.gain.setValueAtTime(amplitude, now + duration - 0.05); // kurz vor Ende
         gain.gain.linearRampToValueAtTime(0, now + duration); // weich ausblenden
 

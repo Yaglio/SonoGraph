@@ -41,7 +41,7 @@ namespace SonoGraph.Client.Services
                 await foreach (var sound in sounds.WithCancellation(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100);
+                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100, sound.Duration / 1000);
                 }
             }
             catch (OperationCanceledException)
