@@ -33,6 +33,7 @@
     --delete: rgb(180, 0, 0);
     --deleteH: rgb(255, 120, 120);
     --tool: rgb(180, 180, 180);
+    --info: rgba(180, 180, 180, 0.95);
     --toolH: rgb(220, 220, 220);
     display: flex;
     width: 100%;
@@ -50,10 +51,11 @@
     border-top: 2px solid black;
     color: lightgrey;
     text-shadow: 1px 1px 1px black;
+    display: grid;
 }
 
 .audioItem {
-    display: inline-flex;
+    display: flex;
     margin: 10px;
 }
 
@@ -62,6 +64,14 @@
     font-size: 1.2rem;
     color: black;
     width: 40px;
+}
+
+.bar {
+    display: inline-block;
+    margin: auto 0 0 0;
+    width: 5px;
+    height: 5px;
+    padding: 0;
 }
 
 .scale {
@@ -86,12 +96,6 @@
     margin-left: 3px;
     transform: translateX(-50%);
     font-size: 15px;
-}
-
-.bar {
-    display: inline-block;
-    margin: auto 0 0 0;
-    border: 1px solid black;
 }
 
 .toolcontainer {
@@ -126,14 +130,19 @@
     margin: 5px;
 }
 
-.tool {
+.tool, .toolD, .field {
     display: block;
     border: 5px groove;
     border-radius: 5px;
     margin: auto auto 10px auto;
     width: 90%;
+    height: 40px;
     font-size: 15px;
     background-color: var(--tool);
+    align-content: center;
+    text-align: center;
+    color: black;
+    text-shadow: none;
 }
 
     .tool:hover {
@@ -145,12 +154,6 @@
     }
 
 .toolD {
-    display: block;
-    border: 5px groove;
-    border-radius: 5px;
-    margin: auto auto 10px auto;
-    width: 90%;
-    font-size: 15px;
     background-color: var(--delete);
 }
 
@@ -161,3 +164,31 @@
     .toolD:active {
         background-color: var(--delete);
     }
+
+.half {
+    width: 90%;
+    margin: auto;
+    display: flex;
+}
+
+.field {
+    background-color: var(--info);
+    border: 1px black solid;
+    margin-bottom: -5px;
+}
+
+.input {
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    width: 40px;
+    text-align: right;
+    outline: none;
+    -moz-appearance: textfield;
+}
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
