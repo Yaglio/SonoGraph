@@ -43,7 +43,6 @@ namespace SonoGraph.Client.Services
                 return;
             }
             Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
-            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             dateTime = newDateTime;
             audio.Sounds.Add(sound);
             asyncSoundStream.AddSound(sound);
@@ -56,8 +55,6 @@ namespace SonoGraph.Client.Services
             {
                 throw new InvalidOperationException("Sound has not started");
             }
-            DateTime newDateTime = DateTime.Now;
-            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             asyncSoundStream.Complete();
             storageService.Audios.Add(audio);
         }
