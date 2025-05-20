@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SonoGraph.Client.Models;
 using SonoGraph.Client.Pages;
@@ -57,7 +56,7 @@ namespace SonoGraph.Client.Services
                 throw new InvalidOperationException("Sound has not started");
             }
             asyncSoundStream.Complete();
-            storageService.AudioEditor.addAudio(audio);
+            storageService.Audios.Add(audio);
         }
 
         private async Task PlaySound(Sound sound)
