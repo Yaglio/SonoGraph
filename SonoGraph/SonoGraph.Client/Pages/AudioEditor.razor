@@ -175,6 +175,7 @@ Author: DaveH-->
 
 	protected override void OnInitialized()
 	{
+		storageService.AudioEditor = this;
 		base.OnInitialized();
 	}
 
@@ -243,6 +244,7 @@ Author: DaveH-->
 			string color = colors[storageService.Audios.Count % colors.Length];
 			storageService.audioColors[audio] = color;
 		}
+		StateHasChanged();
 	}
 
 	public void removeAudio(Audio audio) // remove some specific audio
