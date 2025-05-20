@@ -22,7 +22,7 @@ namespace SonoGraph.Client.Services
 
         public async Task StartSound(Coordinate coordinate, WaveFormType waveForm)
         {
-            Sound sound = new Sound(coordinate.Y, coordinate.X, 0.0);
+            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
             dateTime = DateTime.Now;
             audio = new Audio(waveForm, new List<Sound>());
             audio.Sounds.Add(sound);
@@ -31,16 +31,18 @@ namespace SonoGraph.Client.Services
             await PlaySound(sound);
 
         }
-
         public async Task ProcessSound(Coordinate coordinate)
         {
             if (asyncSoundStream == null || audio == null)
             {
                 throw new InvalidOperationException("Sound has not started");
             }
-            Sound sound = new Sound(coordinate.Y, coordinate.X, 0.0);
             DateTime newDateTime = DateTime.Now;
-            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
+            if (newDateTime.Subtract(dateTime).TotalMilliseconds < 100.0)
+            {
+                return;
+            }
+            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
             dateTime = newDateTime;
             audio.Sounds.Add(sound);
             asyncSoundStream.AddSound(sound);
@@ -53,8 +55,6 @@ namespace SonoGraph.Client.Services
             {
                 throw new InvalidOperationException("Sound has not started");
             }
-            DateTime newDateTime = DateTime.Now;
-            audio.Sounds.Last().Duration = (newDateTime.Subtract(dateTime)).TotalMilliseconds;
             asyncSoundStream.Complete();
             storageService.Audios.Add(audio);
         }
