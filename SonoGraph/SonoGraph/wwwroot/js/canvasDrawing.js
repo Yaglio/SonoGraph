@@ -57,3 +57,37 @@ window.clearCanvas = () => {
     console.log("JS clear canvas");
     context.clearRect(0, 0, canvas.width, canvas.height);
 };
+
+window.resizeCanvasToParent = (canvasId) => {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+        console.error("Canvas not found:", canvasId);
+        return;
+    }
+    const parent = canvas.parentElement;
+    if (!parent) {
+        console.error("Canvas has no parent");
+        return;
+    }
+
+    // Get parent's computed width and height
+    const parentStyles = getComputedStyle(parent);
+    const width = parseInt(parentStyles.width, 10);
+    const height = parseInt(parentStyles.height, 10);
+
+    if (width && height) {
+        canvas.width = width;
+        canvas.height = height;
+        console.log(`Resized canvas to ${width}x${height}`);
+    }
+};
+
+window.setupCanvasResizeHandler = (canvasId) => {
+    // Resize initially
+    window.resizeCanvasToParent(canvasId);
+
+    // Add window resize listener
+    window.addEventListener('resize', () => {
+        window.resizeCanvasToParent(canvasId);
+    });
+};

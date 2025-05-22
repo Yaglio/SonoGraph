@@ -14,25 +14,25 @@
     <input class="globalVol" type="range" min="0" max="100" @bind="@audioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
-<p>Mouse position x: @_mouse.X</p>
-<p>Mouse position y: @_mouse.Y</p>
-<p>Drawing active: @_isDrawing</p>
-<p>On cooldown: @_isCooldown</p>
+<div class="editorcontainer">
+    <div class="canvas-container" style="width:100%; height:100%;">
+        <canvas id="myCanvas" style="border:1px solid width:100%; height:100%; #000000; background-image: url(/Images/paper.png);  background-size: cover; "
+                @onmousedown="OnMouseDown"
+                @onmousemove="OnMouseMove"
+                @onmouseup="OnMouseUp"
+                @onmouseleave="OnMouseUp"
+                @ontouchstart="OnTouchStart"
+                @ontouchmove="OnTouchMove"
+                @ontouchend="OnTouchEnd"
+                @ontouchleave="OnTouchEnd" />
+    </div>
+</div>
 
-<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000; background-image: url(/Images/paper.png);"
-@onmousedown="OnMouseDown"
-@onmousemove="OnMouseMove" 
-@onmouseup="OnMouseUp" 
-@onmouseleave="OnMouseUp" 
-@ontouchstart="OnTouchStart"
-@ontouchmove="OnTouchMove"
-@ontouchend="OnTouchEnd"
-@ontouchleave="OnTouchEnd"/>
+
 
 @code {
 
     private bool _isDrawing = false;
-    private bool _isCooldown = false;
     private Coordinate _mouse = new Coordinate();
 
     private Color strokeColor = Color.DeepSkyBlue;
@@ -43,6 +43,8 @@
     {
         if (firstRender)
         {
+            await JSRuntime.InvokeVoidAsync("setupCanvasResizeHandler", "myCanvas");
+
             _canvasOffset = await JSRuntime.InvokeAsync<Coordinate>("initializeDrawing", "myCanvas");
         }
     }
@@ -93,12 +95,12 @@
     #endregion
 
     private async Task StartDrawing(double x, double y) {
-        if (_isCooldown) return;
+        await JSRuntime.InvokeVoidAsync("clearCanvas");
 
         await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
 
         _isDrawing = true;
-        await soundService.StartSound(new Coordinate(x, y), WaveFormType.Sine);
+        //await soundService.StartSound(new Coordinate(x, y), WaveFormType.Sine);
     }
 
     private async Task Draw(double x, double y)
@@ -109,24 +111,17 @@
 
         //await SendDrawData(_mouse, dateTime)
 
-        await soundService.ProcessSound(new Coordinate(x, y));
+       // await soundService.ProcessSound(new Coordinate(x, y));
     }
 
     private async Task StopDrawing()
     {
-        if (_isCooldown || !_isDrawing) return;
+        if (!_isDrawing) return;
 
         _isDrawing = false;
-        _isCooldown = true;
 
         await JSRuntime.InvokeVoidAsync("stopDrawing");
 
-        await Task.Delay(2000);
-
-        await JSRuntime.InvokeVoidAsync("clearCanvas");
-
-        _isCooldown = false;
-
-        soundService.EndSound();
+        //soundService.EndSound();
     }
 }
