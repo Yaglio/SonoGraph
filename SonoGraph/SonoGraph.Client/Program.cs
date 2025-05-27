@@ -7,4 +7,7 @@ builder.Services.AddScoped<AudioPlayerService>();
 builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<SoundService>();
 
-await builder.Build().RunAsync();
+
+var app = builder.Build();
+
+await app.RunAsync();

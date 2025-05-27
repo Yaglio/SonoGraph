@@ -7,7 +7,7 @@ namespace SonoGraph.Client.Services
     {
         private readonly IJSRuntime jSRuntime;
         private int? currentId = null; // To store the current audio id
-        public double MasterVolume { get; set; } = 50;
+        public double MasterVolume { get; set; } = 20;
 
         public AudioPlayerService(IJSRuntime JSRuntime)
         {
@@ -36,12 +36,14 @@ namespace SonoGraph.Client.Services
         {
             currentId = await jSRuntime.InvokeAsync<int>("startAudio", waveForm.Value);
 
+            Console.WriteLine("Starting audio with ID: " + currentId);
+
             try
             {
                 await foreach (var sound in sounds.WithCancellation(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100, sound.Duration / 1000);
+                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100);
                 }
             }
             catch (OperationCanceledException)

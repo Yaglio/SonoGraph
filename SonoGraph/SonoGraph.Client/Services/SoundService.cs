@@ -1,8 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Microsoft.JSInterop;
-using SonoGraph.Client.Models;
-using SonoGraph.Client.Pages;
-using SonoGraph.Client.Services;
+﻿using SonoGraph.Client.Models;
+using System.Collections.ObjectModel;
 
 namespace SonoGraph.Client.Services
 {
@@ -14,39 +11,52 @@ namespace SonoGraph.Client.Services
         private readonly AudioPlayerService audioPlayerService;
         private AsyncSoundStream? asyncSoundStream;
         private readonly StorageService storageService;
+
+        private readonly int minFrequency = 50;
+        private readonly int maxFrequency = 8000;
+
         public SoundService (AudioPlayerService Service, StorageService storage) {
             audioPlayerService = Service;
             cancellationTokenSource = new CancellationTokenSource();
             storageService = storage;
+
+            audioPlayerService.Initialize();
         }
 
-        public async Task StartSound(Coordinate coordinate, WaveFormType waveForm)
+        public async Task StartSound(WaveFormType waveForm)
         {
-            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
             dateTime = DateTime.Now;
+
             audio = new Audio(waveForm, new List<Sound>());
-            audio.Sounds.Add(sound);
+
             asyncSoundStream = AsyncSoundStream.Create();
-            asyncSoundStream.AddSound(sound);
-            await PlaySound(sound);
+
+            if (asyncSoundStream == null || audio == null)
+            {
+                throw new InvalidOperationException("Sound has not started");
+            }
+            await audioPlayerService.Play(asyncSoundStream.GetSoundsAsync(cancellationTokenSource.Token), audio.WaveForm, cancellationTokenSource.Token);
 
         }
-        public async Task ProcessSound(Coordinate coordinate)
+
+        public void ProcessSound(double frequency, double amplitude)
         {
             if (asyncSoundStream == null || audio == null)
             {
                 throw new InvalidOperationException("Sound has not started");
             }
             DateTime newDateTime = DateTime.Now;
-            if (newDateTime.Subtract(dateTime).TotalMilliseconds < 100.0)
-            {
-                return;
-            }
-            Sound sound = new Sound(coordinate.Y, coordinate.X, 100.0);
-            dateTime = newDateTime;
-            audio.Sounds.Add(sound);
+
+            var mappedFrequency = minFrequency * Math.Pow(maxFrequency / minFrequency, frequency);
+
+            Sound sound = new Sound(mappedFrequency, amplitude, 100.0);
             asyncSoundStream.AddSound(sound);
-            await PlaySound(sound);
+
+            if (newDateTime.Subtract(dateTime).TotalMilliseconds > 100)
+            {
+                audio.Sounds.Add(sound);
+            }
+            dateTime = newDateTime;
         }
 
         public void EndSound()
@@ -57,15 +67,6 @@ namespace SonoGraph.Client.Services
             }
             asyncSoundStream.Complete();
             storageService.Audios.Add(audio);
-        }
-
-        private async Task PlaySound(Sound sound)
-        {
-            if (asyncSoundStream == null || audio == null)
-            {
-                throw new InvalidOperationException("Sound has not started");
-            }
-            await audioPlayerService.Play(asyncSoundStream.GetSoundsAsync(cancellationTokenSource.Token), audio.WaveForm, cancellationTokenSource.Token);
         }
     }
 }

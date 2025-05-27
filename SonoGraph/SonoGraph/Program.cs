@@ -14,16 +14,6 @@ builder.Services.AddScoped<SoundService>();
 
 var app = builder.Build();
 
-// Initialize scoped services
-using (var scope = app.Services.CreateScope())
-{
-    var initializableServices = scope.ServiceProvider.GetServices<IInitializableService>();
-    foreach (var service in initializableServices)
-    {
-        await service.Initialize();
-    }
-}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

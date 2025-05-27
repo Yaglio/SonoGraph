@@ -15,7 +15,7 @@ window.initializeDrawing = (canvasId) => {
     }
 
     context.strokeStyle = 'black';
-    context.lineWidth = 4;
+    context.lineWidth = 8;
     context.lineCap = 'round';
     context.lineJoin = 'round';
     console.log("Canvas initialized successfully.");
@@ -62,32 +62,25 @@ window.resizeCanvasToParent = (canvasId) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
         console.error("Canvas not found:", canvasId);
-        return;
+        return null;
     }
+
     const parent = canvas.parentElement;
     if (!parent) {
         console.error("Canvas has no parent");
-        return;
+        return null;
     }
 
-    // Get parent's computed width and height
-    const parentStyles = getComputedStyle(parent);
-    const width = parseInt(parentStyles.width, 10);
-    const height = parseInt(parentStyles.height, 10);
+    const styles = getComputedStyle(parent);
+    const Width = parseInt(styles.width, 10);
+    const Height = parseInt(styles.height, 10);
 
-    if (width && height) {
-        canvas.width = width;
-        canvas.height = height;
-        console.log(`Resized canvas to ${width}x${height}`);
+    if (Width && Height) {
+        canvas.width = Width;
+        canvas.height = Height;
+        console.log(`Resized canvas to ${Width}x${Height}`);
+        return { Width, Height };
     }
-};
 
-window.setupCanvasResizeHandler = (canvasId) => {
-    // Resize initially
-    window.resizeCanvasToParent(canvasId);
-
-    // Add window resize listener
-    window.addEventListener('resize', () => {
-        window.resizeCanvasToParent(canvasId);
-    });
+    return null;
 };

@@ -17,21 +17,20 @@
 <div class="editorcontainer">
     <div class="canvas-container" style="width:100%; height:100%;">
         <canvas id="myCanvas" style="border:1px solid width:100%; height:100%; #000000; background-image: url(/Images/paper.png);  background-size: cover; "
-                @onmousedown="OnMouseDown"
-                @onmousemove="OnMouseMove"
-                @onmouseup="OnMouseUp"
-                @onmouseleave="OnMouseUp"
-                @ontouchstart="OnTouchStart"
-                @ontouchmove="OnTouchMove"
-                @ontouchend="OnTouchEnd"
-                @ontouchleave="OnTouchEnd" />
+        @onmousedown="OnMouseDown"
+        @onmousemove="OnMouseMove"
+        @onmouseup="OnMouseUp"
+        @onmouseleave="OnMouseUp"
+        @ontouchstart="OnTouchStart"
+        @ontouchmove="OnTouchMove"
+        @ontouchend="OnTouchEnd"
+        @ontouchleave="OnTouchEnd" />
     </div>
 </div>
 
 
 
 @code {
-
     private bool _isDrawing = false;
     private Coordinate _mouse = new Coordinate();
 
@@ -39,13 +38,25 @@
 
     private Coordinate _canvasOffset;
 
+    private double _canvasWidth;
+    private double _canvasHeight;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("setupCanvasResizeHandler", "myCanvas");
-
             _canvasOffset = await JSRuntime.InvokeAsync<Coordinate>("initializeDrawing", "myCanvas");
+
+            var size = await JSRuntime.InvokeAsync<CanvasSize>("resizeCanvasToParent", "myCanvas");
+
+            if (size is not null)
+            {
+                _canvasWidth = size.Width;
+                _canvasHeight = size.Height;
+            } else
+            {
+                throw new Exception("Canvas size could not be determined. Please ensure the canvas is properly initialized.");
+            }
         }
     }
 
@@ -100,7 +111,8 @@
         await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
 
         _isDrawing = true;
-        //await soundService.StartSound(new Coordinate(x, y), WaveFormType.Sine);
+
+        await soundService.StartSound(WaveFormType.Sine);
     }
 
     private async Task Draw(double x, double y)
@@ -109,9 +121,12 @@
 
         await JSRuntime.InvokeVoidAsync("draw", x, y);
 
-        //await SendDrawData(_mouse, dateTime)
+        var frequency = Math.Clamp(x / _canvasWidth, 0.0, 1.0);
+        var amplitude = Math.Clamp(1.0 - (y / _canvasHeight), 0.0, 1.0);
 
-       // await soundService.ProcessSound(new Coordinate(x, y));
+        Console.WriteLine($"Drawing at ({x}, {y}) - Frequency: {frequency}, Amplitude: {amplitude}");
+
+        soundService.ProcessSound(frequency, amplitude);
     }
 
     private async Task StopDrawing()
@@ -122,6 +137,6 @@
 
         await JSRuntime.InvokeVoidAsync("stopDrawing");
 
-        //soundService.EndSound();
-    }
+        soundService.EndSound();
+    } 
 }

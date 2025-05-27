@@ -1,11 +1,11 @@
-﻿var audioContext;
-var oscillators = new Map();
-var oscillatorIdCounter = 0;
+﻿window.audioContext = null;
+window.oscillators = new Map();
+window.oscillatorIdCounter = 0;
 
 window.initializeAudioPlayer = () => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    if (!audioContext) {
+    if (!window.audioContext) {
         console.error("AudioContext not available.");
         return;
     }
@@ -13,92 +13,85 @@ window.initializeAudioPlayer = () => {
     console.log("AudioContext initialized.");
 };
 
-window.startAudio = (waveForm) => {
-    if (!audioContext) {
-        console.error("AudioPlayer not initialized");
-        return;
+class PersistentOscillator {
+    constructor(waveForm, audioContext) {
+        this.audioContext = audioContext;
+
+        this.oscillator = audioContext.createOscillator();
+        this.gainNode = audioContext.createGain();
+
+        this.oscillator.type = waveForm;
+        this.oscillator.connect(this.gainNode);
+        this.gainNode.connect(audioContext.destination);
+
+        this.gainNode.gain.setValueAtTime(0, audioContext.currentTime); // start muted
+
+        this.oscillator.start();
     }
 
-    const oscillator = new Oszillator(waveForm, audioContext);
-    oscillatorIdCounter++;
-    oscillators.set(oscillatorIdCounter, oscillator);
+    play(frequency, amplitude) {
+        const now = this.audioContext.currentTime;
 
-    return oscillatorIdCounter;
+        // Update frequency immediately
+        this.oscillator.frequency.setValueAtTime(frequency, now);
+
+        this.gainNode.gain.cancelScheduledValues(now);
+        this.gainNode.gain.setValueAtTime(amplitude, now);
+
+    }
+
+    stop() {
+        // Stop oscillator after fade out
+        this.oscillator.stop();
+
+        // Disconnect after stopping
+        this.oscillator.onended = () => {
+            this.oscillator.disconnect();
+            this.gainNode.disconnect();
+        };
+    }
+}
+
+window.startAudio = (waveForm) => {
+    if (!window.audioContext) {
+        console.error("AudioPlayer not initialized");
+        return null;
+    }
+
+    const osc = new PersistentOscillator(waveForm, window.audioContext);
+    window.oscillatorIdCounter++;
+    window.oscillators.set(window.oscillatorIdCounter, osc);
+
+    return window.oscillatorIdCounter;
 };
 
-window.playAudio = (id, frequency, amplitude, duration) => {
-    console.log("Playing Sound with:", frequency, amplitude, duration);
-    const osc = oscillators.get(id);
+window.playAudio = (id, frequency, amplitude) => {
+    const osc = window.oscillators.get(id);
     if (!osc) {
         console.error("Invalid oscillator id:", id);
         return;
     }
 
-    osc.play(frequency, amplitude, duration);
+    console.log(`Playing audio on oscillator ${id} with frequency ${frequency} and amplitude ${amplitude}`);
+
+    osc.play(frequency, amplitude);
 };
 
 window.stopAudio = (id) => {
-    const osc = oscillators.get(id);
+    const osc = window.oscillators.get(id);
     if (!osc) {
         console.error("Invalid oscillator id:", id);
         return;
     }
 
-    osc.stopAll();
-    oscillators.delete(id);
+    osc.stop();
+    window.oscillators.delete(id);
 };
 
 window.stopAllAudio = () => {
-    for (const [id, osc] of oscillators) {
-        osc.stopAll();
+    for (const osc of window.oscillators.values()) {
+        osc.stop();
     }
-    oscillators.clear();
+    window.oscillators.clear();
     console.log("All audio stopped.");
 };
-
-
-// Oszillator ist jetzt ein polyphoner Voice-Manager
-class Oszillator {
-    constructor(waveForm, audioContext) {
-        this.audioContext = audioContext;
-        this.waveForm = waveForm;
-        this.voices = new Set(); // alle aktiven Mini-Oszillatoren
-    }
-
-    play(frequency, amplitude, duration) {
-        const now = this.audioContext.currentTime;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-
-        osc.type = this.waveForm;
-        osc.frequency.setValueAtTime(frequency, now);
-
-        gain.gain.setValueAtTime(0, now); // Start bei 0
-        gain.gain.linearRampToValueAtTime(amplitude, now + 0.05); // sanft rein in 10ms
-
-        gain.gain.setValueAtTime(amplitude, now + duration - 0.05); // kurz vor Ende
-        gain.gain.linearRampToValueAtTime(0, now + duration); // weich ausblenden
-
-        osc.connect(gain).connect(this.audioContext.destination);
-        osc.start(now);
-        osc.stop(now + duration);
-
-        osc.onended = () => {
-            osc.disconnect();
-            gain.disconnect();
-            this.voices.delete(osc);
-        };
-
-        this.voices.add(osc);
-    }
-
-    stopAll() {
-        for (const osc of this.voices) {
-            try {
-                osc.stop();
-                osc.disconnect();
-            } catch { }
-        }
-        this.voices.clear();
-    }
-}
