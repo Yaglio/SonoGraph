@@ -50,13 +50,14 @@ namespace SonoGraph.Client.Services
             var mappedFrequency = minFrequency * Math.Pow(maxFrequency / minFrequency, frequency);
 
             Sound sound = new Sound(mappedFrequency, amplitude, 100.0);
+
             asyncSoundStream.AddSound(sound);
 
             if (newDateTime.Subtract(dateTime).TotalMilliseconds > 100)
             {
                 audio.Sounds.Add(sound);
+                dateTime = newDateTime;
             }
-            dateTime = newDateTime;
         }
 
         public void EndSound()

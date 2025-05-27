@@ -72,8 +72,6 @@ window.playAudio = (id, frequency, amplitude) => {
         return;
     }
 
-    console.log(`Playing audio on oscillator ${id} with frequency ${frequency} and amplitude ${amplitude}`);
-
     osc.play(frequency, amplitude);
 };
 

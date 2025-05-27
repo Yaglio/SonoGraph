@@ -124,8 +124,6 @@
         var frequency = Math.Clamp(x / _canvasWidth, 0.0, 1.0);
         var amplitude = Math.Clamp(1.0 - (y / _canvasHeight), 0.0, 1.0);
 
-        Console.WriteLine($"Drawing at ({x}, {y}) - Frequency: {frequency}, Amplitude: {amplitude}");
-
         soundService.ProcessSound(frequency, amplitude);
     }
 
