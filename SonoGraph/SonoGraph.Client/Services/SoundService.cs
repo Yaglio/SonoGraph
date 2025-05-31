@@ -1,11 +1,10 @@
 ﻿using SonoGraph.Client.Models;
-using System.Collections.ObjectModel;
 
 namespace SonoGraph.Client.Services
 {
     public class SoundService
     {
-        private Audio ? audio = null;
+        private Audio? audio = null;
         private DateTime dateTime;
         private CancellationTokenSource cancellationTokenSource;
         private readonly AudioPlayerService audioPlayerService;
@@ -15,7 +14,8 @@ namespace SonoGraph.Client.Services
         private readonly int minFrequency = 50;
         private readonly int maxFrequency = 8000;
 
-        public SoundService (AudioPlayerService Service, AudioEditorService audioEditorService) {
+        public SoundService(AudioPlayerService Service, AudioEditorService audioEditorService)
+        {
             audioPlayerService = Service;
             cancellationTokenSource = new CancellationTokenSource();
             _audioEditorService = audioEditorService;
@@ -68,7 +68,7 @@ namespace SonoGraph.Client.Services
             }
             asyncSoundStream.Complete();
 
-            _audioEditorService.addAudio(audio);
+            _audioEditorService.AddAudio(audio);
         }
     }
 }

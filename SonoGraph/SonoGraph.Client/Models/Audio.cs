@@ -1,7 +1,4 @@
-﻿using SonoGraph.Client.Pages;
-using System.IO;
-
-namespace SonoGraph.Client.Models
+﻿namespace SonoGraph.Client.Models
 {
     public class Audio
     {
@@ -22,6 +19,6 @@ namespace SonoGraph.Client.Models
             return audio.Sounds.Sum(sound => sound.Duration);
         }
 
-       
+
     }
 }

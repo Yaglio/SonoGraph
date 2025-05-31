@@ -2,7 +2,6 @@
 @rendermode InteractiveWebAssembly
 
 @inject AudioPlayerService audioPlayerService
-@inject StorageService storageService
 @inject AudioEditorService audioEditorService
 
 @using SonoGraph.Client.Models
@@ -25,98 +24,97 @@ Author: DaveH-->
 	<input class="globalVol" type="range" min="0" max="100" @bind="@audioPlayerService.MasterVolume" @bind:event="oninput" />
 </header>
 
-<CascadingValue Value="storageService">
-	<div class="editorcontainer">
-		<div class="contentcontainer">
-			<h3>Audio tracks</h3>
-			@foreach (var audio in storageService.Audios)
-			{
-				<div class="audioItem">
-					<button class="audioIndex"
-					style="border: @(storageService.SelectedAudios.Contains(audio) ? "3px solid #FF6347" : "2px solid black");"
-					@onclick="@(() => SelectAudio(audio))">
-						@(storageService.Audios.IndexOf(audio) + 1)
+<div class="editorcontainer">
+	<div class="contentcontainer">
+		<h3>Audio tracks</h3>
+		@foreach (var audio in audioEditorService.AudioCollection)
+		{
+			<div class="audioItem">
+				<button class="audioIndex"
+				style="border: @(_selectedAudios.Contains(audio) ? "3px solid #FF6347" : "2px solid black");"
+				@onclick="@(() => SelectAudio(audio))">
+					A
+				</button>
+
+				@foreach (var sound in audio.Sounds)
+				{
+					<button type="button"
+					class="bar"
+					style="width: @(sound.Duration * _scaleWidth)px;
+								height: @(GetHeight(sound.Frequency))px;
+								background-color: @GetColorForAudio(audio);
+								border: @((_selectedSounds.ContainsKey(audio) && _selectedSounds[audio].Contains(sound)) || _selectedAudios.Contains(audio) ? "2px solid #FF6347" : "2px solid black");"
+					@onclick="@(() => SelectSound(sound, audio))">
 					</button>
+				}
 
-					@foreach (var sound in audio.Sounds)
+			</div>
+		}
+
+		<!-- Scale -->
+		<div class="scale" style="width:@(GetMaxWidth() * _scaleWidth)px;">
+			@{
+				double maxTime = GetMaxWidth(); // in ms
+				double pixelPerMs = _scaleWidth;
+
+				if (maxTime > 0)
+				{
+					for (int time = 0; time < maxTime; time += 250)
 					{
-						<button type="button"
-						class="bar"
-						style="width: @(sound.Duration * scaleWidth)px;
-								height: @(getHeight(sound.Frequency))px;
-								background-color: @storageService.audioColors[audio];
-								border: @(storageService.SelectedSounds.Contains(sound) || storageService.SelectedAudios.Contains(audio) ? "2px solid #FF6347" : "2px solid black");"
-						@onclick="@(() => SelectSound(sound, audio))">
-						</button>
-					}
+						double left = time * pixelPerMs;
+						<span class="scaleMark" style="left:@(left)px;"></span>
 
-				</div>
-			}
-
-			<!-- Scale -->
-			<div class="scale" style="width:@(getMaxWidth() * scaleWidth)px;">
-				@{
-					double maxTime = getMaxWidth(); // in ms
-					double pixelPerMs = scaleWidth;
-
-					if (maxTime > 0)
-					{
-						for (int time = 0; time < maxTime; time += 250)
+						if (time % 500 == 0)
 						{
-							double left = time * pixelPerMs;
-							<span class="scaleMark" style="left:@(left)px;"></span>
-
-							if (time % 500 == 0)
-							{
-								double sec = time / 1000.0;
-								<span class="scaleLabel" style="left:@(left)px;">@sec</span>
-							}
+							double sec = time / 1000.0;
+							<span class="scaleLabel" style="left:@(left)px;">@sec</span>
 						}
 					}
 				}
-			</div>
-		</div>
-
-
-		<div class="toolcontainer">
-			<h3>Tools</h3>
-			<p class="counter">@getSelectedAudiosText()</p>
-			<p class="counter">@getSelectedSoundsText()</p>
-			<p class="counter">@getLastSelectedFreqText()</p>
-			<div class="toolCat">
-				<p class="toolCatName">Audio modification</p>
-				<button class="toolD" @onclick="DeleteSelected">Delete selected</button>
-				<button class="toolD" @onclick="DeleteAllAudios">Delete all audios</button>
-				<button class="tool" @onclick="merge">Merge tracks</button>
-				<button class="tool" @onclick="ShortenAudios">Shorten audios</button>
-				<button class="tool" @onclick="setCompress">Compress: @compress</button>
-				<div class="field">Frequency (Hz):<input type="number" class="input" @bind="newFreq"/></div>
-				<button class="tool" @onclick="setFreq">Apply frequency</button>
-			</div>
-			<div class="toolCat">
-				<p class="toolCatName">Playback control</p>
-				<div class="half">
-					<button class="tool" @onclick="play">Play</button>
-					<button class="tool" @onclick="stop">Stop</button>
-				</div>
-				<p class="toolCatName">Time elapsed: @playTime</p>
-			</div>
+			}
 		</div>
 	</div>
-</CascadingValue>
+
+
+	<div class="toolcontainer">
+		<h3>Tools</h3>
+		<p class="counter">@GetSelectedAudiosText()</p>
+		<p class="counter">@GetSelectedSoundsText()</p>
+		<p class="counter">@GetLastSelectedFreqText()</p>
+		<div class="toolCat">
+			<p class="toolCatName">Audio modification</p>
+			<button class="toolD" @onclick="DeleteSelected">Delete selected</button>
+			<button class="toolD" @onclick="DeleteAllAudios">Delete all audios</button>
+			<button class="tool" @onclick="Merge">Merge tracks</button>
+			<button class="tool" @onclick="ShortenAudios">Shorten audios</button>
+			<button class="tool" @onclick="ToggleCompress">Compress: @_compress</button>
+			<div class="field">Frequency (Hz):<input type="number" class="input" @bind="_newFrequency" /></div>
+			<button class="tool" @onclick="SetFrequency">Apply frequency</button>
+		</div>
+		<div class="toolCat">
+			<p class="toolCatName">Playback control</p>
+			<div class="half">
+				<button class="tool" @onclick="Play">Play</button>
+				<button class="tool" @onclick="Stop">Stop</button>
+			</div>
+			<p class="toolCatName">Time elapsed: @playTime</p>
+		</div>
+	</div>
+</div>
 
 
 @code {
 
-	HashSet<Audio> SelectedAudios = new();
-	Dictionary<Audio, HashSet<Sound>> SelectedSounds = new();
+	private HashSet<Audio> _selectedAudios = new();
+	private Dictionary<Audio, HashSet<Sound>> _selectedSounds = new();
 
-	private double scaleWidth = 0.2;
+	private double _scaleWidth = 0.2;
 
-	private Boolean compress;
-	private int newFreq = 0;
+	private Boolean _compress;
+	private int _newFrequency = 0;
 
-	private Sound ?lastSound = null;
+	private Sound ?_lastSound = null;
+	private Dictionary<Audio, string> _audioColors = new();
 
 	#region Events
 	/// <summary>
@@ -124,11 +122,11 @@ Author: DaveH-->
 	/// </summary>
 	private void DeleteSelected()
 	{
-		audioEditorService.removeAudio(SelectedAudios);
+		audioEditorService.RemoveAudio(_selectedAudios);
 
-		audioEditorService.removeSounds(SelectedSounds);
+		audioEditorService.RemoveSounds(_selectedSounds);
 
-		updateVisualization();
+		ResetSelection();
 	}
 
 	/// <summary>
@@ -136,19 +134,19 @@ Author: DaveH-->
 	/// </summary>
 	private void DeleteAllAudios()
 	{
-		audioEditorService.removeAudio();
+		audioEditorService.RemoveAudio();
 
-		updateVisualization();
+		ResetSelection();
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
-	private void merge()
+	private void Merge()
 	{
-		audioEditorService.mergeAudios(SelectedAudios);
+		audioEditorService.MergeAudios(_selectedAudios);
 
-		updateVisualization();
+		ResetSelection();
 	}
 
 	/// <summary>
@@ -156,27 +154,27 @@ Author: DaveH-->
 	/// </summary>
 	private void ShortenAudios()
 	{
-		audioEditorService.shortenAudios(SelectedAudios, compress);
+		audioEditorService.ShortenAudios(_selectedAudios, _compress);
 
-		updateVisualization();
+		ResetSelection();
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
-	private void setCompress()
+	private void ToggleCompress()
 	{
-		compress = !compress;
+		_compress = !_compress;
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
-	private void setFreq()
+	private void SetFrequency()
 	{
-		audioEditorService.changeSoundFrequency(SelectedSounds.Values.SelectMany(set => set).ToList(), newFreq);
+		audioEditorService.UpdateSoundFrequencies(_selectedSounds.Values.SelectMany(set => set).ToList(), _newFrequency);
 
-		updateVisualization();
+		ResetSelection();
 	}
 
 	/// <summary>
@@ -186,29 +184,44 @@ Author: DaveH-->
 	/// <param name="audio"></param>
 	void SelectSound(Sound sound, Audio audio)
 	{
-		var SoundSet = SelectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
+		HashSet<Sound> soundSet;
 
-		if (SoundSet.Contains(sound))
+		if (_selectedSounds.ContainsKey(audio))
 		{
-			SoundSet.Remove(sound);
-
-			if (SelectedAudios.Contains(audio))
-			{
-				SelectedAudios.Remove(audio);
-			}
-
-			lastSound = null;
+			soundSet = _selectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
 		}
 		else
 		{
-			SoundSet.Add(sound);
+            soundSet = new HashSet<Sound>();
+            _selectedSounds.Add(audio, soundSet);
+		}
 
-			if (!SelectedAudios.Contains(audio) && audio.Sounds.All(s => SoundSet.Contains(s)))
+		if (soundSet.Contains(sound))
+		{
+			soundSet.Remove(sound);
+
+			if (_selectedAudios.Contains(audio))
 			{
-				SelectedAudios.Add(audio);
+				_selectedAudios.Remove(audio);
 			}
 
-			lastSound = sound;
+			if (soundSet.Count == 0)
+			{
+				_selectedSounds.Remove(audio);
+			}
+
+			_lastSound = null;
+		}
+		else
+		{
+			soundSet.Add(sound);
+
+			if (!_selectedAudios.Contains(audio) && audio.Sounds.All(s => soundSet.Contains(s)))
+			{
+				_selectedAudios.Add(audio);
+			}
+
+			_lastSound = sound;
 		}
 	}
 
@@ -218,17 +231,17 @@ Author: DaveH-->
 	/// <param name="audio"></param>
 	void SelectAudio(Audio audio)
 	{
-		var SoundSet = SelectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
+		var SoundSet = _selectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
 
-		if (SelectedAudios.Contains(audio))
+		if (_selectedAudios.Contains(audio))
 		{
-			SelectedAudios.Remove(audio);
+			_selectedAudios.Remove(audio);
 
 			audio.Sounds.ForEach(sound => SoundSet.Remove(sound));
 		}
 		else
 		{
-			SelectedAudios.Add(audio);
+			_selectedAudios.Add(audio);
 
 			audio.Sounds.ForEach(sound =>
 			{
@@ -237,15 +250,15 @@ Author: DaveH-->
 		}
 	}
 
-	private async Task play()
+	private async Task Play()
 	{
-		await stop();
-		if (!storageService.SelectedAudios.Any())
+		await Stop();
+		if (!_selectedAudios.Any())
 			return; // Nothing to play
-		await audioPlayerService.Initialize();
+
 		playTime = 0;
 
-		foreach (var audio in storageService.SelectedAudios)
+		foreach (var audio in _selectedAudios)
 		{
 			var cts = new CancellationTokenSource();
 			if (timeTrackerCts == null)
@@ -260,7 +273,7 @@ Author: DaveH-->
 		_ = TrackPlayTimeAsync(timeTrackerCts.Token);
 	}
 
-	private async Task stop()
+	private async Task Stop()
 	{
 		foreach (var kv in playbackTokens)
 		{
@@ -279,23 +292,22 @@ Author: DaveH-->
 
 	#region view
 
-	private void updateVisualization()
+	private void ResetSelection()
 	{
-		StateHasChanged();
-
-
-		lastSound = null; // Reset last selected sound after any change
+		_selectedAudios.Clear();
+		_selectedSounds.Clear();
+		_lastSound = null; // Reset last selected sound after any change
 	}
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <returns></returns>
-	private string getSelectedAudiosText()
+	private string GetSelectedAudiosText()
 	{
-		if (storageService.SelectedAudios.Count > 0)
+		if (_selectedAudios.Count > 0)
 		{
-			return $"Selected {storageService.SelectedAudios.Count} audio track(s)";
+			return $"Selected {_selectedAudios.Count} audio track(s)";
 		}
 		return "No audio tracks selected";
 	}
@@ -304,11 +316,11 @@ Author: DaveH-->
 	///
 	/// </summary>
 	/// <returns></returns>
-	private string getSelectedSoundsText()
+	private string GetSelectedSoundsText()
 	{
-		if (storageService.SelectedSounds.Count > 0)
+		if (_selectedSounds.Count > 0)
 		{
-			return $"Selected {storageService.SelectedSounds.Count} sound(s)";
+			return $"Selected {_selectedSounds.Values.SelectMany(set => set).ToList().Count} sound(s)";
 		}
 		return "No sounds selected";
 	}
@@ -317,11 +329,11 @@ Author: DaveH-->
 	///
 	/// </summary>
 	/// <returns></returns>
-	private string getLastSelectedFreqText()
+	private string GetLastSelectedFreqText()
 	{
-		if (lastSound != null)
+		if (_lastSound != null)
 		{
-			return $"Last selected frequency: {(int)lastSound.Frequency} Hz";
+			return $"Last selected frequency: {(int)_lastSound.Frequency} Hz";
 		}
 		return "No frequency selected";
 	}
@@ -331,7 +343,7 @@ Author: DaveH-->
 	/// </summary>
 	/// <param name="frequency"></param>
 	/// <returns></returns>
-	private int getHeight(double frequency)
+	private int GetHeight(double frequency)
 	{
 		if (frequency < 0) frequency = 0;
 
@@ -357,7 +369,7 @@ Author: DaveH-->
 	/// </summary>
 	/// <param name="audio"></param>
 	/// <returns></returns>
-	private double getWidth(Audio audio)
+	private double GetWidth(Audio audio)
 	{
 		return AudioUtils.GetDuration(audio);
 	}
@@ -366,14 +378,32 @@ Author: DaveH-->
 	/// 
 	/// </summary>
 	/// <returns></returns>
-	private double getMaxWidth()
+	private double GetMaxWidth()
 	{
-		if (storageService.Audios.Any())
+		if (audioEditorService.AudioCollection.Any())
 		{
-			return storageService.Audios.Max(audio => getWidth(audio));
+			return audioEditorService.AudioCollection.Max(audio => GetWidth(audio));
 		}
 		return 0;
 	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="audio"></param>
+	/// <returns></returns>
+	private string GetColorForAudio(Audio audio)
+	{
+		if (!_audioColors.TryGetValue(audio, out var color))
+		{
+			// Assign a color based on current count to cycle through colors array
+			int index = _audioColors.Count % Colors.Length;
+			color = Colors[index];
+			_audioColors[audio] = color;
+		}
+		return color;
+	}
+
 	#endregion
 
 	#region Playback
@@ -410,4 +440,17 @@ Author: DaveH-->
 
 	#endregion
 
+	private static String[] Colors =
+	{
+		"#FF9F80", // Light Red-Orange
+        "#80FF9F", // Light Green
+        "#809FFF", // Light Blue
+        "#F1E0A3", // Light Yellow
+        "#D7A1D4", // Soft Purple
+        "#F1A15F", // Soft Orange
+        "#70D1D1", // Light Turquoise
+        "#A1E1A1", // Soft Emerald Green
+        "#F1C676", // Soft Golden Yellow
+        "#B58BCA"  // Light Dark Purple
+	};
 }

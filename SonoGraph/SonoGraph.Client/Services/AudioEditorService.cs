@@ -2,34 +2,50 @@
 
 namespace SonoGraph.Client.Services
 {
+    /// <summary>
+    /// Provides methods for editing audio collections, including adding, removing, merging, and shortening audios.
+    /// </summary>
     public class AudioEditorService
     {
-        public List<Audio> Audios { get; set; } = [];
+        /// <summary>
+        /// Represents a collection of audios that can be edited.
+        /// </summary>
+        public HashSet<Audio> AudioCollection { get; set; } = new();
 
-        public void addAudio(Audio audio)
+        /// <summary>
+        /// Adds the specified audio to the AudioCollection collection.
+        /// </summary>
+        /// <param name="audio"></param>
+        public void AddAudio(Audio audio)
         {
-            Audios.Add(audio);
+            AudioCollection.Add(audio);
         }
 
-        public void removeAudio(Audio audio)
-        {
-            Audios.Remove(audio);
-        }
-
-        public void removeAudio(HashSet<Audio> audios)
+        /// <summary>
+        /// Removes the specified audios from the AudioCollection collection.
+        /// </summary>
+        /// <param name="audios"></param>
+        public void RemoveAudio(HashSet<Audio> audios)
         {
             foreach (var audio in audios)
             {
-                Audios.Remove(audio);
+                AudioCollection.Remove(audio);
             }
         }
 
-        public void removeAudio()
+        /// <summary>
+        /// Removes all audios from the AudioCollection collection.
+        /// </summary>
+        public void RemoveAudio()
         {
-            Audios.Clear();
+            AudioCollection.Clear();
         }
 
-        public void removeSounds(Dictionary<Audio, HashSet<Sound>> sounds)
+        /// <summary>
+        /// Removes the specified sounds from the audios in the provided dictionary.
+        /// </summary>
+        /// <param name="sounds"></param>
+        public void RemoveSounds(Dictionary<Audio, HashSet<Sound>> sounds)
         {
             foreach (var audio in sounds)
             {
@@ -37,42 +53,59 @@ namespace SonoGraph.Client.Services
             }
         }
 
-        public void mergeAudios(HashSet<Audio> selectedAudios)
+        /// <summary>
+        /// Merges the selected audios into a single audio and adds it to the AudioCollection collection.
+        /// </summary>
+        /// <param name="selectedAudios"></param>
+        public void MergeAudios(HashSet<Audio> selectedAudios)
         {
             if (selectedAudios.Count < 2) return;
 
             Audio mergedAudio = MergeAudios(selectedAudios.ToList());
 
-            Audios.Add(mergedAudio);
+            AudioCollection.Add(mergedAudio);
 
             foreach (var audio in selectedAudios)
             {
-                Audios.Remove(audio);
+                AudioCollection.Remove(audio);
             }
         }
 
-        public void shortenAudios(HashSet<Audio> selectedAudios, bool compress)
+        /// <summary>
+        /// Shortens the selected audios by either compressing or halving the duration of their sounds.
+        /// </summary>
+        /// <param name="selectedAudios"></param>
+        /// <param name="compress"></param>
+        public void ShortenAudios(HashSet<Audio> selectedAudios, bool compress)
         {
             if (selectedAudios.Count == 0) return;
 
             List<Audio> shortenedAudios = ShortenAudios(selectedAudios.ToList(), compress);
 
-            Audios.AddRange(shortenedAudios);
+            shortenedAudios.ForEach(audio => AudioCollection.Add(audio));
 
             foreach (var audio in selectedAudios)
             {
-                Audios.Remove(audio);
+                AudioCollection.Remove(audio);
             }
         }
 
-        public void changeSoundFrequency(List<Sound> selectedSounds, double frequency)
+        /// <summary>
+        /// Updates the amplitude of the selected sounds to the specified amplitude.
+        /// </summary>
+        /// <param name="selectedSounds"></param>
+        /// <param name="frequency"></param>
+        public void UpdateSoundFrequencies(List<Sound> selectedSounds, double frequency)
         {
             ChangeFrequency(selectedSounds, frequency);
         }
 
-
-        //Takes an Audio List of any length and creates a new Audio of the length of the shortest amongst the input Audios, with Frequncies and Amplitudes being the averages of the input.
-        public static Audio MergeAudios(List<Audio> audios)
+        /// <summary>
+        /// Merges a list of audios into a single audio by averaging the properties of their sounds.
+        /// </summary>
+        /// <param name="audios"></param>
+        /// <returns></returns>
+        private static Audio MergeAudios(List<Audio> audios)
         {
             if (audios == null || audios.Count == 0)
                 return null;
@@ -91,8 +124,13 @@ namespace SonoGraph.Client.Services
             return new Audio(audios[0].WaveForm, mergedSounds);
         }
 
-        //Shortens the Audio to half of its original length, either by uniting neighbouring Sounds (compress == true, changes the exact melody a little but gives a smaller and easier to edit list) or by simply halving the duration (compress == false)
-        public static List<Audio> ShortenAudios(List<Audio> audios, bool compress)
+        /// <summary>
+        /// Shortens a list of audios by either compressing or halving the duration of their sounds.
+        /// </summary>
+        /// <param name="audios"></param>
+        /// <param name="compress"></param>
+        /// <returns></returns>
+        private static List<Audio> ShortenAudios(List<Audio> audios, bool compress)
         {
             List<Audio> shortened = new List<Audio>();
 
@@ -143,7 +181,12 @@ namespace SonoGraph.Client.Services
             return shortened;
         }
 
-        public static void ChangeFrequency(List<Sound> selectedSounds, double frequency)
+        /// <summary>
+        /// Changes the frequency of the selected sounds to the specified frequency.
+        /// </summary>
+        /// <param name="selectedSounds"></param>
+        /// <param name="frequency"></param>
+        private static void ChangeFrequency(List<Sound> selectedSounds, double frequency)
         {
             for (int i = 0; i < selectedSounds.Count; i++)
             {
@@ -152,7 +195,12 @@ namespace SonoGraph.Client.Services
             }
         }
 
-        public static void ChangeAmplitude(List<Sound> selectedSounds, double amplitude)
+        /// <summary>
+        /// Changes the amplitude of the selected sounds to the specified amplitude.
+        /// </summary>
+        /// <param name="selectedSounds"></param>
+        /// <param name="amplitude"></param>
+        private static void ChangeAmplitude(List<Sound> selectedSounds, double amplitude)
         {
             for (int i = 0; i < selectedSounds.Count; i++)
             {
