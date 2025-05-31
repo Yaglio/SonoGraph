@@ -3,6 +3,7 @@
 
 @inject AudioPlayerService audioPlayerService
 @inject StorageService storageService
+@inject AudioEditorService audioEditorService
 
 @using SonoGraph.Client.Models
 
@@ -33,7 +34,7 @@ Author: DaveH-->
 				<div class="audioItem">
 					<button class="audioIndex"
 					style="border: @(storageService.SelectedAudios.Contains(audio) ? "3px solid #FF6347" : "2px solid black");"
-					@onclick="@(() => SelectBar(audio))">
+					@onclick="@(() => SelectAudio(audio))">
 						@(storageService.Audios.IndexOf(audio) + 1)
 					</button>
 
@@ -45,7 +46,7 @@ Author: DaveH-->
 								height: @(getHeight(sound.Frequency))px;
 								background-color: @storageService.audioColors[audio];
 								border: @(storageService.SelectedSounds.Contains(sound) || storageService.SelectedAudios.Contains(audio) ? "2px solid #FF6347" : "2px solid black");"
-						@onclick="@(() => SelectBar(sound))">
+						@onclick="@(() => SelectSound(sound, audio))">
 						</button>
 					}
 
@@ -75,14 +76,17 @@ Author: DaveH-->
 				}
 			</div>
 		</div>
+
+
 		<div class="toolcontainer">
 			<h3>Tools</h3>
-			<p class="counter">@getCount()@getFirstSound()</p>
+			<p class="counter">@getSelectedAudiosText()</p>
+			<p class="counter">@getSelectedSoundsText()</p>
+			<p class="counter">@getLastSelectedFreqText()</p>
 			<div class="toolCat">
 				<p class="toolCatName">Audio modification</p>
 				<button class="toolD" @onclick="DeleteSelected">Delete selected</button>
 				<button class="toolD" @onclick="DeleteAllAudios">Delete all audios</button>
-				<button class="tool" @onclick="addAudio">Add test audio</button>
 				<button class="tool" @onclick="merge">Merge tracks</button>
 				<button class="tool" @onclick="ShortenAudios">Shorten audios</button>
 				<button class="tool" @onclick="setCompress">Compress: @compress</button>
@@ -103,281 +107,135 @@ Author: DaveH-->
 
 
 @code {
+
+	HashSet<Audio> SelectedAudios = new();
+	Dictionary<Audio, HashSet<Sound>> SelectedSounds = new();
+
 	private double scaleWidth = 0.2;
 
-	String[] colors =
-	{
-		"#FF9F80", // Light Red-Orange
-        "#80FF9F", // Light Green
-        "#809FFF", // Light Blue
-        "#F1E0A3", // Light Yellow
-        "#D7A1D4", // Soft Purple
-        "#F1A15F", // Soft Orange
-        "#70D1D1", // Light Turquoise
-        "#A1E1A1", // Soft Emerald Green
-        "#F1C676", // Soft Golden Yellow
-        "#B58BCA"  // Light Dark Purple
-	};
-
-	protected int getHeight(double frequency)
-	{
-		if (frequency < 0) frequency = 0;
-
-		if (frequency <= 100)
-		{
-			// 0 - 100hz → 25px
-			return (int)((frequency / 100.0) * 25);
-		}
-		else if (frequency <= 1000)
-		{
-			// 100 - 1000hz → 100px
-			return 25 + (int)(((frequency - 100) / 900.0) * 100);
-		}
-		else
-		{
-			// 1000 - 20000hz → 75px
-			return 125 + (int)(((frequency - 1000) / 19000.0) * 75);
-		}
-	}
-
-
-	protected string getCount()
-	{
-		StringWriter sw = new StringWriter();
-		sw.WriteLine(storageService.SelectedAudios.Count > 0 ? $"selected {storageService.SelectedAudios.Count} audio(s)" : "no tracks selected");
-		sw.WriteLine(storageService.SelectedSounds.Count > 0 ? $"selected {storageService.SelectedSounds.Count} sound(s)" : "no sounds selected");
-		return sw.ToString();
-	}
-
-	protected string getFirstSound()
-	{
-		if (storageService.SelectedSounds.Any())
-		{
-			Sound last = storageService.SelectedSounds.Last();
-			return (int)last.Frequency + "hz";
-		}
-		return "\n";
-	}
-
-	protected double getWidth(Audio audio)
-	{
-		return AudioUtils.GetDuration(audio);
-	}
-
-	protected double getMaxWidth()
-	{
-		if (storageService.Audios.Any())
-		{
-			return storageService.Audios.Max(audio => getWidth(audio));
-		}
-		return 0;
-	}
-
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-	}
-
-	protected void addAudio() // add test audio
-	{
-		addAudio(AudioUtils.CreateTestAudio());
-		List<Sound> test = new List<Sound>();
-		int[] freqs = {
-    // 10 - 990 Hz, Schrittgröße 10
-    20, 30, 40, 50, 60, 70, 80, 90,
-	100, 110, 120, 130, 140, 150, 160, 170, 180, 190,
-	200, 210, 220, 230, 240, 250, 260, 270, 280, 290,
-	300, 310, 320, 330, 340, 350, 360, 370, 380, 390,
-	400, 410, 420, 430, 440, 450, 460, 470, 480, 490,
-	500, 510, 520, 530, 540, 550, 560, 570, 580, 590,
-	600, 610, 620, 630, 640, 650, 660, 670, 680, 690,
-	700, 710, 720, 730, 740, 750, 760, 770, 780, 790,
-	800, 810, 820, 830, 840, 850, 860, 870, 880, 890,
-	900, 910, 920, 930, 940, 950, 960, 970, 980, 990,
-
-    // 1000 - 20000 Hz, Schrittgröße 100
-    1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900,
-	2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900,
-	3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900,
-	4000, 4100, 4200, 4300, 4400, 4500, 4600, 4700, 4800, 4900,
-	5000, 5100, 5200, 5300, 5400, 5500, 5600, 5700, 5800, 5900,
-	6000, 6100, 6200, 6300, 6400, 6500, 6600, 6700, 6800, 6900,
-	7000, 7100, 7200, 7300, 7400, 7500, 7600, 7700, 7800, 7900,
-	8000, 8100, 8200, 8300, 8400, 8500, 8600, 8700, 8800, 8900,
-	9000, 9100, 9200, 9300, 9400, 9500, 9600, 9700, 9800, 9900,
-	10000, 10100, 10200, 10300, 10400, 10500, 10600, 10700, 10800, 10900,
-	11000, 11100, 11200, 11300, 11400, 11500, 11600, 11700, 11800, 11900,
-	12000, 12100, 12200, 12300, 12400, 12500, 12600, 12700, 12800, 12900,
-	13000, 13100, 13200, 13300, 13400, 13500, 13600, 13700, 13800, 13900,
-	14000, 14100, 14200, 14300, 14400, 14500, 14600, 14700, 14800, 14900,
-	15000, 15100, 15200, 15300, 15400, 15500, 15600, 15700, 15800, 15900,
-	16000, 16100, 16200, 16300, 16400, 16500, 16600, 16700, 16800, 16900,
-	17000, 17100, 17200, 17300, 17400, 17500, 17600, 17700, 17800, 17900,
-	18000, 18100, 18200, 18300, 18400, 18500, 18600, 18700, 18800, 18900,
-	19000, 19100, 19200, 19300, 19400, 19500, 19600, 19700, 19800, 19900,
-	20000
-};
-		foreach(int freq in freqs)
-		{
-			test.Add(new Sound(freq, 10, 100));
-		}
-		addAudio(new Audio(WaveFormType.Sine, test));
-	}
-
-	private string? lastColor;
-
-	public void addAudio(Audio audio) // add some specific audio
-	{
-		storageService.Audios.Add(audio);
-
-		foreach (var sound in audio.Sounds)
-		{
-			soundToAudioMap[sound] = audio;
-		}
-		if (lastColor != null)
-		{
-			storageService.audioColors[audio] = lastColor;
-			lastColor = null;
-		} else
-		{
-			string color = colors[storageService.Audios.Count % colors.Length];
-			storageService.audioColors[audio] = color;
-		}
-	}
-
-	public void removeAudio(Audio audio) // remove some specific audio
-	{
-		storageService.audioColors.TryGetValue(audio, out lastColor);
-		foreach (var sound in audio.Sounds)
-		{
-			soundToAudioMap.Remove(sound);
-		}
-		storageService.SelectedAudios.Remove(audio);
-		storageService.Audios.Remove(audio);
-	}
-
-	public Audio? getParent(Sound sound) // get audio of some specific sound
-	{
-		if (soundToAudioMap.TryGetValue(sound, out var audio))
-		{
-			return audio;
-		}
-		return null;
-	}
-
-	public List<Audio> getSelectedAudios() // get selected Audios
-	{
-		return storageService.SelectedAudios;
-	}
-
-	public List<Sound> getSelectedSounds() // get selected Sounds
-	{
-		return storageService.SelectedSounds;
-	}
-
-	void SelectBar(Audio audio)
-	{
-		if (storageService.SelectedAudios.Contains(audio))
-		{
-			storageService.SelectedAudios.Remove(audio);
-		}
-		else
-		{
-			foreach (var sound in audio.Sounds)
-			{
-				storageService.SelectedSounds.Remove(sound);
-			}
-			storageService.SelectedAudios.Add(audio);
-		}
-	}
-
-	private Dictionary<Sound, Audio> soundToAudioMap = new();
-
-	void SelectBar(Sound sound)
-	{
-		if (soundToAudioMap.TryGetValue(sound, out var parentAudio))
-		{
-			storageService.SelectedAudios.Remove(parentAudio);
-		}
-
-		if (storageService.SelectedSounds.Contains(sound))
-		{
-			storageService.SelectedSounds.Remove(sound);
-		}
-		else
-		{
-			storageService.SelectedSounds.Add(sound);
-		}
-	}
-
-
-	void DeleteSelected()
-	{
-
-		// if selectedSounds not empty, call external method to remove Sounds
-
-		foreach (var audio in storageService.SelectedAudios.ToList())
-		{
-			removeAudio(audio);
-		}
-
-		storageService.SelectedAudios.Clear();
-		storageService.SelectedSounds.Clear();
-	}
-
-	void DeleteAllAudios()
-	{
-		storageService.Audios.Clear();
-		storageService.SelectedAudios.Clear();
-		storageService.SelectedSounds.Clear();
-		soundToAudioMap.Clear();
-	}
-
-	void merge()
-	{
-		if (storageService.SelectedAudios.Count > 1)
-		{
-			addAudio(AudioUtils.MergeAudios(getSelectedAudios()));
-			DeleteSelected();
-		}
-	}
-
 	private Boolean compress;
-
-	void setCompress()
-	{
-		if (compress)
-		{
-			compress = false;
-		} else
-		{
-			compress = true;
-		}
-	}
-
-	void ShortenAudios()
-	{
-		List<Audio> shortened = AudioUtils.ShortenAudios(getSelectedAudios(), compress);
-		foreach (Audio audio in getSelectedAudios().ToList())
-		{
-			removeAudio(audio);
-		}
-		foreach(Audio audio in shortened)
-		{
-			addAudio(audio);
-		}
-	}
-
 	private int newFreq = 0;
 
-	void setFreq()
+	private Sound ?lastSound = null;
+
+	#region Events
+	/// <summary>
+	/// 
+	/// </summary>
+	private void DeleteSelected()
 	{
-		Sound.ChangeFrequency(getSelectedSounds(), newFreq);
+		audioEditorService.removeAudio(SelectedAudios);
+
+		audioEditorService.removeSounds(SelectedSounds);
+
+		updateVisualization();
 	}
 
-	private Dictionary<Audio, CancellationTokenSource> playbackTokens = new();
-	private CancellationTokenSource? timeTrackerCts;
-	private int playTime;
+	/// <summary>
+	/// 
+	/// </summary>
+	private void DeleteAllAudios()
+	{
+		audioEditorService.removeAudio();
+
+		updateVisualization();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	private void merge()
+	{
+		audioEditorService.mergeAudios(SelectedAudios);
+
+		updateVisualization();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	private void ShortenAudios()
+	{
+		audioEditorService.shortenAudios(SelectedAudios, compress);
+
+		updateVisualization();
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	private void setCompress()
+	{
+		compress = !compress;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	private void setFreq()
+	{
+		audioEditorService.changeSoundFrequency(SelectedSounds.Values.SelectMany(set => set).ToList(), newFreq);
+
+		updateVisualization();
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="sound"></param>
+	/// <param name="audio"></param>
+	void SelectSound(Sound sound, Audio audio)
+	{
+		var SoundSet = SelectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
+
+		if (SoundSet.Contains(sound))
+		{
+			SoundSet.Remove(sound);
+
+			if (SelectedAudios.Contains(audio))
+			{
+				SelectedAudios.Remove(audio);
+			}
+
+			lastSound = null;
+		}
+		else
+		{
+			SoundSet.Add(sound);
+
+			if (!SelectedAudios.Contains(audio) && audio.Sounds.All(s => SoundSet.Contains(s)))
+			{
+				SelectedAudios.Add(audio);
+			}
+
+			lastSound = sound;
+		}
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="audio"></param>
+	void SelectAudio(Audio audio)
+	{
+		var SoundSet = SelectedSounds.GetValueOrDefault(audio, new HashSet<Sound>());
+
+		if (SelectedAudios.Contains(audio))
+		{
+			SelectedAudios.Remove(audio);
+
+			audio.Sounds.ForEach(sound => SoundSet.Remove(sound));
+		}
+		else
+		{
+			SelectedAudios.Add(audio);
+
+			audio.Sounds.ForEach(sound =>
+			{
+				SoundSet.Add(sound);
+			});
+		}
+	}
 
 	private async Task play()
 	{
@@ -401,6 +259,128 @@ Author: DaveH-->
 
 		_ = TrackPlayTimeAsync(timeTrackerCts.Token);
 	}
+
+	private async Task stop()
+	{
+		foreach (var kv in playbackTokens)
+		{
+			kv.Value.Cancel();
+		}
+
+		timeTrackerCts?.Cancel();
+		timeTrackerCts = null;
+
+		await Task.Delay(100);
+
+		playbackTokens.Clear();
+		playTime = 0;
+	}
+	#endregion
+
+	#region view
+
+	private void updateVisualization()
+	{
+		StateHasChanged();
+
+
+		lastSound = null; // Reset last selected sound after any change
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <returns></returns>
+	private string getSelectedAudiosText()
+	{
+		if (storageService.SelectedAudios.Count > 0)
+		{
+			return $"Selected {storageService.SelectedAudios.Count} audio track(s)";
+		}
+		return "No audio tracks selected";
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <returns></returns>
+	private string getSelectedSoundsText()
+	{
+		if (storageService.SelectedSounds.Count > 0)
+		{
+			return $"Selected {storageService.SelectedSounds.Count} sound(s)";
+		}
+		return "No sounds selected";
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <returns></returns>
+	private string getLastSelectedFreqText()
+	{
+		if (lastSound != null)
+		{
+			return $"Last selected frequency: {(int)lastSound.Frequency} Hz";
+		}
+		return "No frequency selected";
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="frequency"></param>
+	/// <returns></returns>
+	private int getHeight(double frequency)
+	{
+		if (frequency < 0) frequency = 0;
+
+		if (frequency <= 100)
+		{
+			// 0 - 100hz → 25px
+			return (int)((frequency / 100.0) * 25);
+		}
+		else if (frequency <= 1000)
+		{
+			// 100 - 1000hz → 100px
+			return 25 + (int)(((frequency - 100) / 900.0) * 100);
+		}
+		else
+		{
+			// 1000 - 20000hz → 75px
+			return 125 + (int)(((frequency - 1000) / 19000.0) * 75);
+		}
+	}
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="audio"></param>
+	/// <returns></returns>
+	private double getWidth(Audio audio)
+	{
+		return AudioUtils.GetDuration(audio);
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	private double getMaxWidth()
+	{
+		if (storageService.Audios.Any())
+		{
+			return storageService.Audios.Max(audio => getWidth(audio));
+		}
+		return 0;
+	}
+	#endregion
+
+	#region Playback
+
+	private Dictionary<Audio, CancellationTokenSource> playbackTokens = new();
+	private CancellationTokenSource? timeTrackerCts;
+	private int playTime;
 
 	private async Task PlayAudioAsync(Audio audio, CancellationToken token)
 	{
@@ -428,19 +408,6 @@ Author: DaveH-->
 		catch (TaskCanceledException) { }
 	}
 
-	private async Task stop()
-	{
-		foreach (var kv in playbackTokens)
-		{
-			kv.Value.Cancel();
-		}
+	#endregion
 
-		timeTrackerCts?.Cancel();
-		timeTrackerCts = null;
-
-		await Task.Delay(100);
-
-		playbackTokens.Clear();
-		playTime = 0;
-	}
 }

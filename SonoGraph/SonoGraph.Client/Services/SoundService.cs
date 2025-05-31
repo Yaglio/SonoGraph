@@ -10,15 +10,15 @@ namespace SonoGraph.Client.Services
         private CancellationTokenSource cancellationTokenSource;
         private readonly AudioPlayerService audioPlayerService;
         private AsyncSoundStream? asyncSoundStream;
-        private readonly StorageService storageService;
+        private readonly AudioEditorService _audioEditorService;
 
         private readonly int minFrequency = 50;
         private readonly int maxFrequency = 8000;
 
-        public SoundService (AudioPlayerService Service, StorageService storage) {
+        public SoundService (AudioPlayerService Service, AudioEditorService audioEditorService) {
             audioPlayerService = Service;
             cancellationTokenSource = new CancellationTokenSource();
-            storageService = storage;
+            _audioEditorService = audioEditorService;
 
             audioPlayerService.Initialize();
         }
@@ -67,7 +67,8 @@ namespace SonoGraph.Client.Services
                 throw new InvalidOperationException("Sound has not started");
             }
             asyncSoundStream.Complete();
-            storageService.Audios.Add(audio);
+
+            _audioEditorService.addAudio(audio);
         }
     }
 }
