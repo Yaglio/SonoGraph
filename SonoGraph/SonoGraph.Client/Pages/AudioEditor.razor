@@ -6,16 +6,6 @@
 
 @using SonoGraph.Client.Models
 
-<!--AudioEditor UI. Has functions to display and delete many audios at once and to control the playback of audios.
-API:
-removeAudio(Audio), addAudio(Audio), getParent(Sound), getSelectedAudios(), getSelectedSounds()
-
-TODO: External methods for audio editing (also removeSelected is unfinished).
-Getting input from drawing board.
-Adding Buttons for new tools
-
-Author: DaveH-->
-
 <!--global header-->
 
 <header class="gHeader">
@@ -32,9 +22,7 @@ Author: DaveH-->
 			<div class="audioItem">
 				<button class="audioIndex"
 				style="border: @(_selectedAudios.Contains(audio) ? "3px solid #FF6347" : "2px solid black");"
-				@onclick="@(() => SelectAudio(audio))">
-					A
-				</button>
+				@onclick="@(() => SelectAudio(audio))"></button>
 
 				@foreach (var sound in audio.Sounds)
 				{
@@ -192,8 +180,8 @@ Author: DaveH-->
 		}
 		else
 		{
-            soundSet = new HashSet<Sound>();
-            _selectedSounds.Add(audio, soundSet);
+			soundSet = new HashSet<Sound>();
+			_selectedSounds.Add(audio, soundSet);
 		}
 
 		if (soundSet.Contains(sound))
