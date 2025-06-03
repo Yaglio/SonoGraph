@@ -97,7 +97,10 @@ namespace SonoGraph.Client.Services
         /// <param name="frequency"></param>
         public void UpdateSoundFrequencies(List<Sound> selectedSounds, double frequency)
         {
-            ChangeFrequency(selectedSounds, frequency);
+            if (frequency < 20000 && frequency > 20)
+            {
+                ChangeFrequency(selectedSounds, frequency);
+            }
         }
 
         /// <summary>
