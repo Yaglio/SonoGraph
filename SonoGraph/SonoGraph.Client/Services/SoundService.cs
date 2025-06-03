@@ -85,7 +85,7 @@ namespace SonoGraph.Client.Services
             }
             asyncSoundStream.Complete();
 
-            storageService.Audios.Add(audio);
+            _audioEditorService.AddAudio(audio);
 
             audio = null;
         }
