@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace SonoGraph.Client.Models
+﻿namespace SonoGraph.Client.Models
 {
     public class WaveFormType : Enumeration
     {

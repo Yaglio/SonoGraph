@@ -7,7 +7,6 @@
 @inject AudioPlayerService audioPlayerService
 @inject SoundService soundService
 
-<!--test header to show global volume. Header is removeable-->
 <header class="gHeader">
     <h3 class="pageTitle">Canvas</h3>
     <span class="gVolDisplay"> Global volume: @audioPlayerService.MasterVolume%</span>
@@ -34,13 +33,20 @@
     private bool _isDrawing = false;
     private Coordinate _mouse = new Coordinate();
 
-    private Color strokeColor = Color.DeepSkyBlue;
+    private Color _strokeColor = Color.DeepSkyBlue;
 
     private Coordinate _canvasOffset;
 
     private double _canvasWidth;
     private double _canvasHeight;
 
+    /// <summary>
+    /// Called by the framework after the component has rendered.
+    /// Used to initialize canvas offset and size once on first render.
+    /// </summary>
+    /// <param name="firstRender">Indicates whether this is the first time the component is rendered.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="Exception">Thrown if canvas size could not be determined.</exception>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -61,12 +67,21 @@
     }
 
     #region InputEvents
-
+    /// <summary>
+    /// Handles mouse down event and begins drawing at specified coordinates.
+    /// </summary>
+    /// <param name="e">The mouse event args containing position data.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnMouseDown(MouseEventArgs e)
     {
         await StartDrawing(e.OffsetX, e.OffsetY);
     }
 
+    /// <summary>
+    /// Handles mouse move event and draws if drawing is active.
+    /// </summary>
+    /// <param name="e">The mouse event args containing position data.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnMouseMove(MouseEventArgs e)
     {
         _mouse.X = e.OffsetX;
@@ -75,11 +90,22 @@
         await Draw(e.OffsetX, e.OffsetY);
     }
 
+    /// <summary>
+    /// Handles mouse up event and stops drawing.
+    /// </summary>
+    /// <param name="e">The mouse event args.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnMouseUp(MouseEventArgs e)
     {
         await StopDrawing();
     }
 
+
+    /// <summary>
+    /// Handles touch start event and begins drawing at touch location.
+    /// </summary>
+    /// <param name="e">The touch event args.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnTouchStart(TouchEventArgs e)
     {
         var touchPoint = e.TargetTouches.FirstOrDefault();
@@ -89,6 +115,11 @@
         await StartDrawing(touchPoint.ClientX - _canvasOffset.X, touchPoint.ClientY - _canvasOffset.Y);
     }
 
+    /// <summary>
+    /// Handles touch move event and draws based on touch location.
+    /// </summary>
+    /// <param name="e">The touch event args.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnTouchMove(TouchEventArgs e)
     {
         var touchPoint = e.TargetTouches.FirstOrDefault();
@@ -98,6 +129,12 @@
         await Draw(touchPoint.ClientX - _canvasOffset.X, touchPoint.ClientY - _canvasOffset.Y);
     }
 
+
+    /// <summary>
+    /// Handles touch end event and stops drawing.
+    /// </summary>
+    /// <param name="e">The touch event args.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task OnTouchEnd(TouchEventArgs e)
     {
         await StopDrawing();
@@ -105,16 +142,29 @@
 
     #endregion
 
+
+    /// <summary>
+    /// Starts a drawing operation and initializes sound playback.
+    /// </summary>
+    /// <param name="x">The X-coordinate to start drawing at.</param>
+    /// <param name="y">The Y-coordinate to start drawing at.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task StartDrawing(double x, double y) {
         await JSRuntime.InvokeVoidAsync("clearCanvas");
 
-        await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(strokeColor));
+        await JSRuntime.InvokeVoidAsync("startDrawing", x, y, ColorTranslator.ToHtml(_strokeColor));
 
         _isDrawing = true;
 
         await soundService.StartSound(WaveFormType.Sine);
     }
 
+    /// <summary>
+    /// Continues the drawing operation and processes audio based on cursor/touch position.
+    /// </summary>
+    /// <param name="x">The current X-coordinate.</param>
+    /// <param name="y">The current Y-coordinate.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task Draw(double x, double y)
     {
         if (!_isDrawing) return;
@@ -127,6 +177,10 @@
         soundService.ProcessSound(frequency, amplitude);
     }
 
+    /// <summary>
+    /// Stops the current drawing operation and ends audio playback.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task StopDrawing()
     {
         if (!_isDrawing) return;

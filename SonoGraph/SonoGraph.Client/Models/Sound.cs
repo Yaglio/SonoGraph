@@ -23,23 +23,5 @@
             Duration = duration;
             Id = nextID++;
         }
-
-        public static void ChangeFrequency(List<Sound> selectedSounds, double frequency)
-        {
-            for (int i = 0; i < selectedSounds.Count; i++)
-            {
-                Sound sound = selectedSounds[i];
-                sound.Frequency = frequency;
-            }
-        }
-
-        public static void ChangeAmplitude(List<Sound> selectedSounds, double amplitude)
-        {
-            for(int i = 0; i < selectedSounds.Count; i++)
-            {
-                Sound sound = selectedSounds[i];
-                sound.Amplitude = amplitude;
-            }
-        }
     }
 }

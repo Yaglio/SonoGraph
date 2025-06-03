@@ -3,65 +3,82 @@ using SonoGraph.Client.Models;
 
 namespace SonoGraph.Client.Services
 {
-    public class AudioPlayerService : IInitializableService
+    /// <summary>
+    /// Provides methods for playing audio using JavaScript interop.
+    /// </summary>
+    public class AudioPlayerService
     {
-        private readonly IJSRuntime jSRuntime;
-        private int? currentId = null; // To store the current audio id
+        /// <summary>
+        /// The JavaScript runtime used for interop calls.
+        /// </summary>
+        private readonly IJSRuntime _jSRuntime;
+
+        /// <summary>
+        /// The current audio playback session ID.
+        /// </summary>
+        private int? _currentId = null;
+
+        /// <summary>
+        /// Gets or sets the master volume for audio playback (0-100).
+        /// </summary>
         public double MasterVolume { get; set; } = 20;
 
-        public AudioPlayerService(IJSRuntime JSRuntime)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioPlayerService"/> class.
+        /// </summary>
+        /// <param name="jSRuntime">The JavaScript runtime for interop.</param>
+        public AudioPlayerService(IJSRuntime jSRuntime)
         {
-            jSRuntime = JSRuntime;
+            _jSRuntime = jSRuntime;
         }
 
         /// <summary>
-        /// Initializes the audio player with the js audio context.
+        /// Initializes the audio player by invoking the corresponding JavaScript function.
         /// </summary>
-        /// <param name="audioId"></param>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task Initialize()
         {
-            await jSRuntime.InvokeVoidAsync("initializeAudioPlayer");
+            await _jSRuntime.InvokeVoidAsync("initializeAudioPlayer");
         }
 
         /// <summary>
-        /// Plays a stream of sounds with the specified wave form. 
-        /// Use an <see cref="AsyncSoundStream"/> to dynamically add sounds.
+        /// Plays a sequence of <see cref="Sound"/> objects using the specified wave form.
         /// </summary>
-        /// <param name="sounds"></param>
-        /// <param name="waveForm"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="sounds">An asynchronous sequence of <see cref="Sound"/> objects to play.</param>
+        /// <param name="waveForm">The <see cref="WaveFormType"/> to use for playback.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task Play(IAsyncEnumerable<Sound> sounds, WaveFormType waveForm, CancellationToken cancellationToken)
         {
-            currentId = await jSRuntime.InvokeAsync<int>("startAudio", waveForm.Value);
+            _currentId = await _jSRuntime.InvokeAsync<int>("startAudio", waveForm.Value);
 
-            Console.WriteLine("Starting audio with ID: " + currentId);
+            Console.WriteLine("Starting audio with ID: " + _currentId);
 
             try
             {
                 await foreach (var sound in sounds.WithCancellation(cancellationToken))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await jSRuntime.InvokeVoidAsync("playAudio", currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100);
+                    await _jSRuntime.InvokeVoidAsync("playAudio", _currentId, sound.Frequency, sound.Amplitude * MasterVolume / 100);
                 }
             }
             catch (OperationCanceledException)
             {
-
+                // Playback was cancelled.
             }
             finally
             {
-                await jSRuntime.InvokeVoidAsync("stopAudio", currentId);
+                await _jSRuntime.InvokeVoidAsync("stopAudio", _currentId);
             }
         }
 
         /// <summary>
-        /// Plays a sound with the specified frequency, amplitude, and wave form for a duration in ms.
+        /// Plays a single <see cref="Sound"/> object using the specified wave form.
         /// </summary>
-        /// <param name="sound"></param>
-        /// <param name="waveForm"></param>
-        /// <returns></returns>
+        /// <param name="sound">The <see cref="Sound"/> object to play.</param>
+        /// <param name="waveForm">The <see cref="WaveFormType"/> to use for playback.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task Play(Sound sound, WaveFormType waveForm, CancellationToken cancellationToken)
         {
             async IAsyncEnumerable<Sound> StreamSound()
@@ -70,16 +87,15 @@ namespace SonoGraph.Client.Services
                 await Task.Delay(TimeSpan.FromMilliseconds(sound.Duration), cancellationToken);
             }
 
-
             await Play(StreamSound(), waveForm, cancellationToken);
         }
 
         /// <summary>
-        /// Plays a audio.
+        /// Plays an <see cref="Audio"/> object by streaming its sounds in sequence using the specified wave form.
         /// </summary>
-        /// <param name="audio"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="audio">The <see cref="Audio"/> object containing the sounds and wave form to play.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task Play(Audio audio, CancellationToken cancellationToken)
         {
             async IAsyncEnumerable<Sound> StreamSound()
@@ -89,7 +105,6 @@ namespace SonoGraph.Client.Services
                     yield return sound;
                     await Task.Delay(TimeSpan.FromMilliseconds(sound.Duration), cancellationToken);
                 }
-
             }
 
             await Play(StreamSound(), audio.WaveForm, cancellationToken);

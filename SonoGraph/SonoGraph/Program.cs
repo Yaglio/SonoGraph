@@ -1,4 +1,3 @@
-using SonoGraph.Client.Pages;
 using SonoGraph.Client.Services;
 using SonoGraph.Components;
 
@@ -9,8 +8,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<AudioPlayerService>();
-builder.Services.AddScoped<StorageService>();
 builder.Services.AddScoped<SoundService>();
+builder.Services.AddScoped<AudioEditorService>();
 
 var app = builder.Build();
 
