@@ -1,5 +1,9 @@
 ﻿namespace SonoGraph.Client.Models
 {
+    /// <summary>
+    /// WaveformType is used to determine the Type of Wave an Audio can have
+    /// in the final Project only "sine" Wave is used
+    /// </summary>
     public class WaveFormType : Enumeration
     {
         public static readonly WaveFormType Sine = new WaveFormType("sine");
