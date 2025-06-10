@@ -2,12 +2,13 @@
 
 namespace SonoGraph.Client.Services
 {
+    /// <summary>
+    /// class Soundservice is responsible for translating the Coordinates into Sounds while Drawing on the Canvas and saving those Sounds into one continous Audio
+    /// This Audio is given to the Editor once the drawing process has finished
+    /// </summary>
     public class SoundService
-    {   
-        /*
-         * class Soundservice is responsible for translating the Coordinates into Sounds while Drawing on the Canvas and saving those Sounds into one continous Audio
-         * This Audio is given to the Editor once the drawing process has finished
-         */
+    {
+        
         private Audio ? audio = null;
         private DateTime dateTime;
         private CancellationTokenSource cancellationTokenSource;
@@ -26,11 +27,12 @@ namespace SonoGraph.Client.Services
 
             audioPlayerService.Initialize();
         }
-        /*
-         * Starts the Soundcollection process. Needs to be called before any other method
-         * Throws InvalidOperationException if the Audio or the Soundstream could not be created or saved in the Variable
-         * @param waveForm the Type of Wave that the Audio should be played as (Sinus, sawtooth, square, triangle) not changeable in final Project
-         */
+        /// <summary>
+        /// Starts the Soundcollection process. Needs to be called before any other method
+        /// </summary>
+        /// <param name="waveForm"></param> the Type of Wave that the Audio should be played as (Sinus, sawtooth, square, triangle) not changeable in final Project
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception> if the Audio or the Soundstream could not be created or saved in the Variable
         public async Task StartSound(WaveFormType waveForm)
         {
             dateTime = DateTime.Now;
@@ -46,12 +48,12 @@ namespace SonoGraph.Client.Services
             await audioPlayerService.Play(asyncSoundStream.GetSoundsAsync(cancellationTokenSource.Token), audio.WaveForm, cancellationTokenSource.Token);
 
         }
-        /*
-         * Processes a Sound after 100ms and adds it to the Queue of Soundstream and Audio
-         * Throws invalidOperationException if method startSound was not sucessfully called
-         * @param frequenzy
-         * @param amplitude
-         */
+        /// <summary>
+        /// Processes a Sound after 100ms and adds it to the Queue of Soundstream and Audio
+        /// </summary>
+        /// <param name="frequency"></param>
+        /// <param name="amplitude"></param>
+        /// <exception cref="InvalidOperationException"></exception> if method startSound was not successfully called
         public void ProcessSound(double frequency, double amplitude)
         {
             if (asyncSoundStream == null || audio == null)
@@ -73,10 +75,10 @@ namespace SonoGraph.Client.Services
                 dateTime = newDateTime;
             }
         }
-        /*
-         * Stops the Soundstream and puts the Audio into storage
-         * Throws InvalidOperationException if method startSound was not sucessfully called
-         */
+        /// <summary>
+        /// Stops the Soundstream and puts the Audio into storage
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception> if method startSound was not successfully called
         public void EndSound()
         {
             if (asyncSoundStream == null || audio == null)
