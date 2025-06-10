@@ -106,7 +106,7 @@
 
 	#region Events
 	/// <summary>
-	/// 
+	/// deletes all selected audios and sounds and resets selection when button delete selected is pressed
 	/// </summary>
 	private void DeleteSelected()
 	{
@@ -118,7 +118,7 @@
 	}
 
 	/// <summary>
-	/// 
+	/// deletes all audios and resets selection when button delete all is pressed
 	/// </summary>
 	private void DeleteAllAudios()
 	{
@@ -128,7 +128,7 @@
 	}
 
 	/// <summary>
-	/// 
+	/// merges selected audios into a new audio and resets selection when button merge audios is pressed
 	/// </summary>
 	private void Merge()
 	{
@@ -138,7 +138,9 @@
 	}
 
 	/// <summary>
-	/// 
+	/// shortens selected audios to half the time either by halving sound duration (compress false)
+	/// or by deleting every second sound in the audios (compress true) and resets selection when
+	/// button shorten audios is pressed
 	/// </summary>
 	private void ShortenAudios()
 	{
@@ -148,7 +150,7 @@
 	}
 
 	/// <summary>
-	/// 
+	/// toggles state of compress between true and false on button compress click
 	/// </summary>
 	private void ToggleCompress()
 	{
@@ -156,7 +158,8 @@
 	}
 
 	/// <summary>
-	/// 
+	/// sets the frequency of the selected sounds to the number in the field entered above the button
+	/// when the button set frequency is pressed
 	/// </summary>
 	private void SetFrequency()
 	{
@@ -166,7 +169,8 @@
 	}
 
 	/// <summary>
-	///
+	/// adds the selected sound to the selected sounds dictionary or removes it from selection if it is already
+	/// selected. Selected elements are marked by a red border.
 	/// </summary>
 	/// <param name="sound"></param>
 	/// <param name="audio"></param>
@@ -214,7 +218,8 @@
 	}
 
 	/// <summary>
-	///
+	/// adds the selected sound to the selected audios dictionary or removes it from selection if it is already
+	/// selected. Selected elements are marked by a red border.
 	/// </summary>
 	/// <param name="audio"></param>
 	void SelectAudio(Audio audio)
@@ -288,7 +293,8 @@
 	}
 
 	/// <summary>
-	///
+	/// returns the number of selected audios formatted in a string to be printed
+	/// in the tools area
 	/// </summary>
 	/// <returns></returns>
 	private string GetSelectedAudiosText()
@@ -301,7 +307,8 @@
 	}
 
 	/// <summary>
-	///
+	/// returns the number of selected sounds formatted in a string to be printed
+	/// in the tools area
 	/// </summary>
 	/// <returns></returns>
 	private string GetSelectedSoundsText()
@@ -314,7 +321,9 @@
 	}
 
 	/// <summary>
-	///
+	/// returns the frequency of the last sound selected formatted in a string to be printed
+	/// in the tools area. Is limited to only showing the frequency of the last sound to
+	/// inherit overflows.
 	/// </summary>
 	/// <returns></returns>
 	private string GetLastSelectedFreqText()
@@ -327,7 +336,15 @@
 	}
 
 	/// <summary>
-	/// 
+	/// returns the height of a bar (visualization of a sound) in pixels. There is no upper bound as
+	/// the height of the audio container is adjusted for the tallest bar in the audio. However, the
+	/// intended maximum size is at 20 kHz as this mark represents the highest note hearable by humans.
+	/// To make differences between the frequencies of one sound or another clearer
+	/// the most-used frequency band between 100 and 1000 Hz (human speech and music) displays
+	/// frequency differences more extrem than the band above 1000 Hz. As vey low notes (under 100 Hz)
+	/// are also used less frequently, they also get less space for displaying differences.
+	/// The pixel numbers show, how many pixels of the intended maximum audio container size
+	/// of 200 pixels 
 	/// </summary>
 	/// <param name="frequency"></param>
 	/// <returns></returns>
@@ -353,7 +370,7 @@
 	}
 
 	/// <summary>
-	///
+	/// returns the width of a sound bar in pixels
 	/// </summary>
 	/// <param name="audio"></param>
 	/// <returns></returns>
@@ -363,7 +380,7 @@
 	}
 
 	/// <summary>
-	/// 
+	/// returns the maximum sound bar width of an audio
 	/// </summary>
 	/// <returns></returns>
 	private double GetMaxWidth()
@@ -376,7 +393,9 @@
 	}
 
 	/// <summary>
-	/// 
+	/// returns the background color for the bars of an audio. An audio has one of the available colors
+	/// assigned. A new audio takes the next one. If all colors are assigned, the color assignement
+	/// starts from the beginning.
 	/// </summary>
 	/// <param name="audio"></param>
 	/// <returns></returns>
